@@ -1,12 +1,3 @@
-/* tools/career.js —— 生涯外壳验收
- *
- * 施工规范 B9 的两条：
- *   1) 连打三个案子，声誉/良心/金钱正确累积，结案有结局段和延伸阅读
- *   2) 打到一半退出，重进能接上（阶段、信任、阅卷标记、剩余轮次都对得上）
- *
- * 要跑 http 服务器，因为存档用 localStorage，file:// 下有的浏览器会拒。
- *     node tools/career.js        （脚本自带一个临时服务器，读 t/srv/x.html）
- */
 const { chromium } = require('playwright');
 const path = require('path'); const http = require('http'); const fs = require('fs');
 
@@ -52,7 +43,7 @@ const WEAK = ['请法庭从轻处理。','请法庭考虑他的实际情况。',
   await p.evaluate(()=>{ localStorage.clear(); });
   await p.reload();
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(13); });
-  await p.click('.mask #ok'); await p.waitForTimeout(400);
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok'); await p.waitForTimeout(400);
 
   console.log('【一】连打三个案子，三轨累积');
   const runs = [['innocent', STRONG], ['lenient', WEAK], ['procedure', STRONG]];
@@ -82,7 +73,7 @@ const WEAK = ['请法庭从轻处理。','请法庭考虑他的实际情况。',
   const before = await p.evaluate(()=>({stage:PHASES[S.stage].name, trust:S.trust, read:[...S.read], marks:JSON.stringify(S.marks), turns:S.turnsLeft}));
   console.log('  退出前：' + JSON.stringify(before));
   await p.reload(); await p.waitForTimeout(400);
-  await p.click('.mask #ok'); await p.waitForTimeout(500);
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok'); await p.waitForTimeout(500);
   const askText = await p.$eval('#action', e=>e.textContent.replace(/\s+/g,' ').slice(0,40)).catch(()=>'');
   console.log('  重进看到：' + askText);
   await p.click('#go'); await p.waitForTimeout(900);

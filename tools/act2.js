@@ -1,13 +1,3 @@
-/* tools/act2.js —— 第二幕·会见验收（三幕因果链）
- *
- * 施工规范 B4 最重要的三条：
- *   链路一 不读证据 → 戳不穿谎 → 庭上引用 → 当庭打脸，心证 -15
- *   链路二 读了证据 → 当面戳穿 → 庭上说同一句话，安然无事
- *   链路三 承诺办不到的事 → 信任涨、良心跌
- * 外加：信任不够时问不出秘密，缓和下来才问得出。
- *
- *     node tools/act2.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const TARGET = path.resolve(process.argv[2] || 'index.html');
@@ -20,12 +10,11 @@ async function scene(fn){
   p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + TARGET);
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(11); });
-  await p.click('.mask #ok');
-  // B9 起开局是事务所，先接案
-  {
-    const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
-    if (c) { await c.click(); await p.waitForTimeout(600); }
-  }
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
   await fn(p);
   const st = await p.evaluate(()=>({
     trust:S.trust, known:[...S.known], out:[...S.lieOut], busted:[...S.lieBusted],

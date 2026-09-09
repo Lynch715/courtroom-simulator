@@ -1,17 +1,3 @@
-/* tools/voice.js —— 语音输入验收
- *
- * 施工规范 B6 的三种环境：
- *   一 file:// 本地打开 —— 不渲染按钮，改成一行常驻提示（Chromium 把 file:// 也算安全上下文，
- *     所以必须单独判协议，不能只看 isSecureContext）
- *   二 localhost/HTTPS —— 按住说话，中途结果只进浮层不进输入框，定稿才落进去，
- *     松手即停，永不自动提交，落进去之后还能接着用键盘改
- *   三 识别失败（模拟国内连不上 Google）—— 按钮换成提示行、toast 一次、写进 localStorage，
- *     刷新之后仍然是提示行，不让玩家反复撞墙
- *
- * 真麦克风在无头浏览器里用不了，所以注入一个假的识别引擎，行为照样验得完整。
- *
- *     node tools/voice.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const http = require('http');
@@ -39,7 +25,17 @@ window.__fail = (err) => { const r = window.__sr; if(r && r.onerror) r.onerror({
 `;
 
 async function boot(p){
-  await p.click('.mask #ok');
+  if(await p.$('#wgo')) await p.click('#wgo');
+  else if(await p.$('.mask #ok')) await p.click('.mask #ok');
+  await p.waitForTimeout(400);
+  /* 存档是 B12 之后加的：reload 之后先问「要接着打吗」。接着打，然后直接返回。 */
+  if(await p.$('#fresh')){ await p.click('#go'); await p.waitForTimeout(900);
+    await p.waitForSelector('#tri .chip', {timeout:10000}); return; }
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
+
   const btn = await p.waitForSelector('#leave', {timeout:3000}).catch(()=>null);
   if(btn){ await btn.click(); await p.click('#yes'); await p.waitForTimeout(400); }
   const st = await p.waitForSelector('#stop', {timeout:3000}).catch(()=>null);

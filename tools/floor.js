@@ -1,10 +1,3 @@
-/* tools/floor.js —— 耐心见底的后果
- *
- * 连续冒犯法庭，验证：训诫（耐心<20）→ 责令停止发言（耐心=0）→ 插话入口收起
- * → 被禁言后仍能走完流程到宣判。
- *
- *     node tools/floor.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 (async () => {
@@ -14,24 +7,16 @@ const path = require('path');
   p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + path.resolve(process.argv[2] || 'index.html'));
   await p.evaluate(()=>{ if(window.Engine&&Engine.seed) Engine.seed(3); });
-  await p.click('.mask #ok');
-  // B9 起开局是事务所，先接案
-  {
-    const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
-    if (c) { await c.click(); await p.waitForTimeout(600); }
-  }
-  // 跳过第一幕阅卷（旧版本没有这一幕，静默跳过）
-  {
-    const btn = await p.waitForSelector('#leave', {timeout:2500}).catch(()=>null);
-    if (btn){ await btn.click(); await p.click('#yes'); await p.waitForTimeout(500); }
-  }
-  // 跳过第二幕会见（旧版本没有这一幕，静默跳过）
-  {
-    const btn = await p.waitForSelector('#stop', {timeout:2500}).catch(()=>null);
-    if (btn){ await btn.click(); await p.waitForSelector('#st .chip');
-              await p.click('#st .chip[data-v="lenient"]'); await p.click('#go');
-              await p.waitForTimeout(1300); }
-  }
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
+
+  /* B5 之后退出卷宗先进会见室；这些脚本测的是庭上，会见直接跳过。 */
+  if(await p.$('#leave')){ await p.click('#leave'); await p.click('#yes'); await p.waitForTimeout(600); }
+  if(await p.$('#stop')){ await p.click('#stop'); await p.waitForTimeout(400); }
+  if(await p.$('#st .chip')){ await p.click('#st .chip'); await p.click('#go'); await p.waitForTimeout(1500); }
   for (let i=0;i<2;i++){ await p.waitForSelector('#tri .chip'); await p.click('#tri .chip[data-v="none"]'); await p.click('#go'); }
   await p.waitForSelector('#wit .chip'); await p.click('#wit .chip[data-v="pass"]'); await p.click('#go');
 

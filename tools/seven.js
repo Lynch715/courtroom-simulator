@@ -1,10 +1,3 @@
-/* tools/seven.js —— 七连输入验收
- *
- * 施工规范 B2 的验收项：精准论点 / 空泛陈词 / 无关闲聊 / 辱骂 / 提示注入 /
- * 向证人发问 / 申请休庭，七种输入都要有得体应答，且状态变化符合预期。
- *
- *     node tools/seven.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const TARGET = process.argv[2] || 'index.html';
@@ -27,24 +20,16 @@ const CASES = [
   p.on('console', m => { if (m.type()==='error') errs.push('console: ' + m.text()); });
   await p.goto('file://' + path.resolve(TARGET));
   await p.evaluate(()=>{ if(window.Engine && Engine.seed) Engine.seed(7); });
-  await p.click('.mask #ok');
-  // B9 起开局是事务所，先接案
-  {
-    const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
-    if (c) { await c.click(); await p.waitForTimeout(600); }
-  }
-  // 跳过第一幕阅卷（旧版本没有这一幕，静默跳过）
-  {
-    const btn = await p.waitForSelector('#leave', {timeout:2500}).catch(()=>null);
-    if (btn){ await btn.click(); await p.click('#yes'); await p.waitForTimeout(500); }
-  }
-  // 跳过第二幕会见（旧版本没有这一幕，静默跳过）
-  {
-    const btn = await p.waitForSelector('#stop', {timeout:2500}).catch(()=>null);
-    if (btn){ await btn.click(); await p.waitForSelector('#st .chip');
-              await p.click('#st .chip[data-v="lenient"]'); await p.click('#go');
-              await p.waitForTimeout(1300); }
-  }
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
+
+  /* B5 之后退出卷宗先进会见室；这些脚本测的是庭上，会见直接跳过。 */
+  if(await p.$('#leave')){ await p.click('#leave'); await p.click('#yes'); await p.waitForTimeout(600); }
+  if(await p.$('#stop')){ await p.click('#stop'); await p.waitForTimeout(400); }
+  if(await p.$('#st .chip')){ await p.click('#st .chip'); await p.click('#go'); await p.waitForTimeout(1500); }
 
   // 走完举证质证，进入辩论
   for (let i=0;i<2;i++){

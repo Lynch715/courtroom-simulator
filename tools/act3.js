@@ -1,12 +1,3 @@
-/* tools/act3.js —— 第三幕·辩论导演器验收
- *
- * 施工规范 B5 的三条：
- *   1) 立住论点之后，公诉人回应你而不是重复自己；被驳倒的论点他不再提
- *   2) 追问证人能问出破绽并解锁论点，同一个破绽只能问出一次
- *   3) 辩论轮次是动态的：论点栈空、轮次上限、或你自己说「发表完毕」都能收场
- *
- *     node tools/act3.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const TARGET = path.resolve(process.argv[2] || 'index.html');
@@ -18,12 +9,11 @@ async function open(fn){
   p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + TARGET);
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(21); });
-  await p.click('.mask #ok');
-  // B9 起开局是事务所，先接案
-  {
-    const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
-    if (c) { await c.click(); await p.waitForTimeout(600); }
-  }
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
   await p.click('#leave'); await p.click('#yes'); await p.waitForTimeout(500);
   await p.click('#stop'); await p.waitForSelector('#st .chip');
   await p.click('#st .chip[data-v="lenient"]'); await p.click('#go'); await p.waitForTimeout(1300);

@@ -1,10 +1,3 @@
-/* tools/art.js —— 美术接入验收
- *
- * 施工规范 B8：有图时各处正常显示、无图时全走 SVG 占位且零报错、
- * 关键时刻的立绘滑入能触发。
- *
- *     node tools/art.js [目标html] [noart]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const T = path.resolve(process.argv[2] || 'index.html');
@@ -21,7 +14,12 @@ const NOART = process.argv[3] === 'noart';
 
   await p.goto('file://' + T);
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(4); });
-  await p.click('.mask #ok'); await p.waitForTimeout(400);
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok'); await p.waitForTimeout(400);
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
+
   {   // B9 起开局是事务所，先接案
     const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
     if (c) { await c.click(); await p.waitForTimeout(700); }

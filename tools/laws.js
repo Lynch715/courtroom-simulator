@@ -1,10 +1,3 @@
-/* tools/laws.js —— 法条速查验收
- *
- * 施工规范 B7：条号 / 中文条号 / 带法名 / 关键词 / 罪名别名都要查得到，
- * 笔录里的条文号点得开，全程零外网。
- *
- *     node tools/laws.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const T = path.resolve(process.argv[2] || 'index.html');
@@ -16,7 +9,12 @@ const T = path.resolve(process.argv[2] || 'index.html');
   await p.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : (net++, r.abort()));
   await p.goto('file://' + T);
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(3); });
-  await p.click('.mask #ok');
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
+
   {   // B9 起开局是事务所，先接案
     const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
     if (c) { await c.click(); await p.waitForTimeout(600); }

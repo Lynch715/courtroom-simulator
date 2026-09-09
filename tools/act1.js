@@ -1,12 +1,3 @@
-/* tools/act1.js —— 第一幕·阅卷验收
- *
- * 施工规范 B3 的三条：
- *   1) 精力用尽后不能再细读、不能再想
- *   2) 标对 / 标错 / 没读，同一句质证意见在庭上的三种下场
- *   3) 读过关键证据，庭上讲相关论点更有底
- *
- *     node tools/act1.js [目标html]
- */
 const { chromium } = require('playwright');
 const path = require('path');
 const TARGET = path.resolve(process.argv[2] || 'index.html');
@@ -18,12 +9,11 @@ async function scene(fn){
   p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + TARGET);
   await p.evaluate(()=>{ if(window.Engine) Engine.seed(5); });
-  await p.click('.mask #ok');
-  // B9 起开局是事务所，先接案
-  {
-    const c = await p.waitForSelector('.caseCard', {timeout:2500}).catch(()=>null);
-    if (c) { await c.click(); await p.waitForTimeout(600); }
-  }
+  if(await p.$('#wgo')) await p.click('#wgo'); else await p.click('.mask #ok');
+
+  /* 事务所接案页是 B9 之后加的：老脚本原来直接进卷宗，这里补一步选案。 */
+  await p.waitForTimeout(400);
+  if(await p.$('.caseCard[data-id="c01"]')){ await p.click('.caseCard[data-id="c01"]'); await p.waitForTimeout(700); }
   const r = await fn(p);
   const st = await p.evaluate(()=>({
     ledger: S.ledger.filter(e=>e.ch==='心').map(e=>e.why+' '+(e.v>0?'+':'')+e.v),
@@ -36,10 +26,14 @@ async function scene(fn){
 const openEv = async (p,id) => { await p.click(`.doc.pickable[data-ev="${id}"]`); await p.waitForTimeout(120); };
 const read   = async (p,id) => { await openEv(p,id); await p.click('#aRead'); await p.waitForTimeout(150); };
 const mark   = async (p,id,f)=>{ await openEv(p,id); await p.click(`#mk .chip[data-f="${f}"]`); await p.waitForTimeout(150); };
-const leave  = async (p) => { await p.click('#leave'); await p.click('#yes'); await p.waitForTimeout(500);
-  const st = await p.waitForSelector('#stop',{timeout:2500}).catch(()=>null);
-  if(st){ await st.click(); await p.waitForSelector('#st .chip');
-          await p.click('#st .chip[data-v="procedure"]'); await p.click('#go'); await p.waitForTimeout(1300); } };
+const leave  = async (p) => {
+  await p.click('#leave'); await p.click('#yes'); await p.waitForTimeout(600);
+  /* B5 之后，退出卷宗先进会见室。这个脚本只测阅卷对质证的影响，会见直接跳过。 */
+  if(await p.$('#stop')) { await p.click('#stop'); await p.waitForTimeout(400); }
+  if(await p.$('#st .chip')){
+    await p.click('#st .chip'); await p.click('#go'); await p.waitForTimeout(1500);
+  }
+};
 const crossE3 = async (p, flag) => {          // 第一格无异议，第二格（同事证言）提 flag
   await p.waitForSelector('#tri .chip'); await p.click('#tri .chip[data-v="none"]'); await p.click('#go');
   await p.waitForTimeout(700);

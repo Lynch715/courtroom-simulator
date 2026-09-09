@@ -1,4 +1,4 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:22 · 7 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:25 · 7 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -168,7 +168,9 @@ label.f input{
   .col.right .scale svg{max-width:88px;flex:none}
   .col.right .scale .val{font-size:26px;margin:0}
   .col.right .scale .lab{white-space:nowrap}
-  .ledger{display:none}
+  /* 只藏右栏那条实时流水。复盘弹窗里的流水和「没说出口的话」用的是同一个类，
+     以前一并藏掉了——手机上两个招牌功能直接看不见。 */
+  .col.right .ledger{display:none}
   body.showfile .col.left{display:block;order:2}
   #record{padding:16px 16px 34px}
   #action{padding:12px 16px 16px}
@@ -226,7 +228,7 @@ label.f input{
 #fileSide{display:none}
 body.phase-file #docview{display:block}
 body.phase-file #record{display:none}
-body.phase-file .scale,body.phase-file .pat,body.phase-file .ledger{display:none}
+body.phase-file .scale,body.phase-file .pat,body.phase-file .col.right .ledger{display:none}
 body.phase-file #fileSide{display:block}
 body.phase-file #aside{display:none}
 .deskIntro{font-family:var(--serif);font-size:16px;line-height:1.9;color:var(--paper);white-space:pre-wrap;max-width:56ch}
@@ -264,7 +266,7 @@ body.phase-file #aside{display:none}
 #meetSide{display:none}
 body.phase-meet #talk{display:block}
 body.phase-meet #record{display:none}
-body.phase-meet .scale,body.phase-meet .pat,body.phase-meet .ledger{display:none}
+body.phase-meet .scale,body.phase-meet .pat,body.phase-meet .col.right .ledger{display:none}
 body.phase-meet #meetSide{display:block}
 body.phase-meet #aside{display:none}
 #talk .line{margin-bottom:15px;max-width:60ch}
@@ -345,7 +347,9 @@ body.phase-meet #aside{display:none}
   .col.right .scale{padding:8px 12px 6px}
   .col.right .scale svg{max-width:96px}
   .col.right .pat{padding:8px 14px 12px}
-  .ledger{display:none}
+  /* 只藏右栏那条实时流水。复盘弹窗里的流水和「没说出口的话」用的是同一个类，
+     以前一并藏掉了——手机上两个招牌功能直接看不见。 */
+  .col.right .ledger{display:none}
 
   /* 阅卷：卷宗清单是主导航，放到最上面 */
   /* 卷宗列表在窄屏是可滚的一小块。原来切在半张卡片上，看着像坏了，

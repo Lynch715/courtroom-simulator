@@ -91,8 +91,9 @@ function paint(){
   // 插话入口（正在输入时不打扰）
   if(typeof mountAside === "function" && !document.querySelector("#asideSay")) mountAside();
   // 阶段条。在事务所时一格都不亮。
+  /* data-n 是给窄屏用的：手机上只显示当前这一格，后面缀个 3/5 */
   $("#stagebar").innerHTML = PHASES.map((ph,n)=>
-    `<i class="${S.stage<0?"":(n===S.stage?"on":(n<S.stage?"done":""))}">${ph.name}</i>`).join("");
+    `<i data-n="${n+1}/${PHASES.length}" class="${S.stage<0?"":(n===S.stage?"on":(n<S.stage?"done":""))}">${ph.name}</i>`).join("");
 }
 
 /* 心证流水（复盘页和右栏共用）。只取心证频道，耐心和生涯不混进来。 */

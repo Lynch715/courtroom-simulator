@@ -66,7 +66,9 @@ function canPay(k){ return S.energy >= cost(k); }
 function fileActions(){
   const c = CASE.investigation.costs;
   if(!curEv){
-    ui(`<div class="prompt">从左边挑一份材料开始。<b>精力 ${S.energy}</b>，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。</div>
+    /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
+    const where = window.matchMedia("(max-width:900px)").matches ? "上面" : "左边";
+    ui(`<div class="prompt">从${where}挑一份材料开始。<b>精力 ${S.energy}</b>，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。</div>
       <div class="row"><button class="ghost" id="leave">直接去法院</button>
       <span class="hint">你也可以什么都不看就去。没人拦着。</span></div>`);
     $("#leave").onclick = confirmLeave;

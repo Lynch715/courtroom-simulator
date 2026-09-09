@@ -26,19 +26,20 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* ---------- 骨架 ---------- */
 #app{display:flex;flex-direction:column;height:100%}
 header{
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;gap:14px;flex-wrap:nowrap;
   padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);
   flex:none;
 }
 .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
 .brand h1{font-family:var(--serif);font-size:19px;font-weight:600;margin:0;letter-spacing:.06em;color:var(--paper)}
 .brand span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stagebar{display:flex;align-items:center;gap:0;font-size:12.5px;color:var(--muted)}
-.stagebar i{font-style:normal;padding:3px 11px;border:1px solid var(--line);border-right:none}
+.stagebar{display:flex;align-items:center;gap:0;font-size:12.5px;color:var(--muted);flex:none}
+.stagebar i{font-style:normal;padding:3px 11px;border:1px solid var(--line);border-right:none;white-space:nowrap}
 .stagebar i:last-child{border-right:1px solid var(--line)}
 .stagebar i.on{color:var(--ink);background:var(--brass);border-color:var(--brass);font-weight:600}
 .stagebar i.done{color:var(--paper);border-color:var(--line2)}
-.iconbtn{background:none;border:1px solid var(--line2);padding:5px 9px;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.iconbtn{background:none;border:1px solid var(--line2);padding:5px 9px;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;white-space:nowrap;flex:none}
+.iconbtn b{font-weight:400}
 .iconbtn:hover{color:var(--paper);border-color:var(--brass)}
 
 main{flex:1;display:grid;grid-template-columns:270px minmax(0,1fr) 250px;min-height:0}
@@ -131,7 +132,7 @@ textarea::placeholder{color:#5C6874;font-family:var(--sans);font-size:13.5px}
 .ledger .e b.dn{color:var(--pros)}
 
 /* ---------- 弹层 ---------- */
-.mask{position:fixed;inset:0;background:rgba(8,11,14,.82);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.mask{position:fixed;inset:0;background:rgba(8,11,14,.82);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;overflow-y:auto}
 .modal{background:var(--panel);border:1px solid var(--line2);max-width:520px;width:100%;max-height:88vh;overflow-y:auto;padding:22px 24px}
 .modal h3{font-family:var(--serif);font-size:19px;margin:0 0 4px;color:var(--paper);font-weight:600}
 .modal p.sub{font-size:13px;color:var(--muted);margin:0 0 18px}
@@ -141,7 +142,7 @@ label.f input{
   color:var(--paper);padding:8px 10px;font-size:14px;font-family:var(--sans);
 }
 .switch{display:flex;gap:10px;align-items:flex-start;padding:11px;border:1px solid var(--line);background:var(--panel2);margin-bottom:16px}
-.switch input{margin-top:3px;accent-color:var(--brass)}
+.switch input{margin-top:2px;accent-color:var(--brass);width:18px;height:18px;flex:none}
 .switch div{font-size:12.5px;color:var(--muted)}
 .switch b{color:var(--paper);font-size:13.5px;display:block;font-weight:600}
 .verdict{font-family:var(--serif);line-height:1.9;color:var(--paper);font-size:15px;white-space:pre-wrap}
@@ -157,10 +158,35 @@ label.f input{
   .col.right .scale svg{max-width:120px}
   .ledger{display:none}
   body.showfile .col.left{display:block;order:2}
-  #record{padding:16px}
+  #record{padding:16px 16px 24px}
   #action{padding:12px 16px 16px}
   .brand span{display:none}
-  .stagebar i{padding:3px 7px}
+
+  /* 窄屏顶栏：五格阶段条塞不下，只留当前这一格，后面缀个 4/5。
+     三个按钮收成纯图标。这样 390px 也是一行，不会把字挤成竖排。 */
+  header{gap:8px;padding:9px 12px}
+  .brand h1{font-size:17px}
+  .stagebar i{display:none}
+  .stagebar i.on{display:inline-block;padding:4px 10px;border-right:1px solid var(--brass)}
+  .stagebar i.on::after{content:" " attr(data-n);font-weight:400;opacity:.65;font-size:11px}
+  .iconbtn{padding:7px 9px;min-height:32px}
+  .iconbtn b{display:none}
+  #btnFile b{display:none}
+
+  /* 触摸热区：这几个在手机上按不准 */
+  .switch{align-items:flex-start;gap:12px}
+  .switch input[type=checkbox]{width:22px;height:22px;flex:none;margin-top:1px}
+  #asideBtn{min-height:36px;padding:9px 14px;font-size:13px}
+}
+@media(max-width:900px){
+  .mask{padding:12px 10px;align-items:flex-start}
+  .modal{padding:18px 16px;max-height:none;
+    margin:max(10px,env(safe-area-inset-top)) 0 max(10px,env(safe-area-inset-bottom))}
+  .modal h3{font-size:18px}
+}
+@media(max-width:380px){
+  .stagebar i.on{padding:4px 7px;font-size:12px}
+  .brand h1{font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
@@ -178,7 +204,7 @@ label.f input{
 /* ===== v1 样式：插话 ===== */
 #aside{flex:none;border-top:1px solid var(--line);background:var(--panel);padding:8px 26px}
 #aside:empty{display:none}
-.ghost.tiny{padding:4px 12px;font-size:12.5px}
+.ghost.tiny{padding:8px 13px;font-size:12.5px;min-height:32px}
 .interject textarea{min-height:56px}
 .interject .row{margin-top:8px}
 @media(max-width:900px){#aside{padding:8px 16px}}
@@ -310,7 +336,12 @@ body.phase-meet #aside{display:none}
   .ledger{display:none}
 
   /* 阅卷：卷宗清单是主导航，放到最上面 */
-  body.phase-file .col.left{display:block;order:1;max-height:34vh;border-top:none;border-bottom:1px solid var(--line)}
+  /* 卷宗列表在窄屏是可滚的一小块。原来切在半张卡片上，看着像坏了，
+     所以底边压一道渐变，让人知道下面还有。 */
+  body.phase-file .col.left{display:block;order:1;max-height:36vh;border-top:none;
+    border-bottom:1px solid var(--line);position:relative;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
   body.phase-file .col.right{order:2}
   body.phase-file .energy{padding:10px 14px}
   body.phase-file .noteList{display:none}
@@ -438,5 +469,12 @@ body.phase-office #aside{display:none}
   border:1px solid var(--line);background:var(--panel2);padding:13px 15px;margin-top:8px}
 @media(max-width:900px){
   body.phase-office .col.mid{order:1}
-  .tracks .tk{min-width:0;flex:1 1 100%}
+  /* 三条轨原来一条占一行，加起来就是一整屏，把「接哪个案子」顶到折叠线以下老远。
+     手机上压成一行三格：数字还看得清，接案列表能露出来。 */
+  .tracks{gap:8px;margin-bottom:16px}
+  .tracks .tk{min-width:0;flex:1 1 0;padding:10px 8px;text-align:center}
+  .tracks .tk b{font-size:19px}
+  .tracks .tk span{font-size:11px;margin:2px 0 0;letter-spacing:.04em}
+  .tracks .tk i{display:none}
+  .caseCard{padding:13px 14px}
 }

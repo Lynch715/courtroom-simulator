@@ -181,13 +181,7 @@ label.f input{
      以前三栏上下叠着，每一栏都只剩一条缝——点开卷宗只有 36vh 能滚，
      上面是出庭人员，下面是质证按钮。现在底部一条标签栏切换，
      选中的那一屏占满 header 和标签栏之间的全部高度。 */
-  main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
-  .col{grid-area:1/1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .col.left,.col.right{border:none;max-height:none}
-  .col.left,.col.right,.col.mid{display:none}
-  body[data-pane="left"]  .col.left {display:block}
-  body[data-pane="right"] .col.right{display:block}
-  body[data-pane="mid"]   .col.mid  {display:flex}
+  /* 三栏的显隐统一在文件末尾那一段里管，这里不重复定义 */
 
   /* 心证那一屏：天平放大一点，这一屏它是主角 */
   .col.right .scale{border-bottom:1px solid var(--line);padding:18px 14px 10px}
@@ -295,8 +289,7 @@ body.phase-file #aside{display:none}
 .noteList .e{font-size:12.5px;padding:6px 0;border-bottom:1px dotted var(--line);color:var(--muted)}
 .noteList .e b{display:block;color:var(--paper);font-weight:600;font-size:11.5px;margin-bottom:2px}
 @media(max-width:900px){
-  body.phase-file .col.left{display:block;order:2}
-  body.phase-file .col.right{order:1}
+  /* 显隐由标签栏统一管（见文件末尾那一段），这里只管内边距 */
   #docview{padding:16px}
 }
 
@@ -330,8 +323,6 @@ body.phase-meet #aside{display:none}
 .evRead{font-size:12px;color:var(--muted);line-height:1.6;margin-top:4px;
   border-left:2px solid var(--line2);padding-left:9px}
 @media(max-width:900px){
-  body.phase-meet .col.left{display:none}
-  body.phase-meet .col.right{order:1}
   #talk{padding:16px}
 }
 @media(prefers-reduced-motion:reduce){.trustFill{transition:none}}

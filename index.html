@@ -1,4 +1,4 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T07:57 · 8 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T07:58 · 8 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -556,6 +556,16 @@ body.phase-office #aside{display:none}
 
 .fLab{font-size:12.5px;color:var(--muted);margin-bottom:5px}
 #thm{margin-bottom:14px}
+
+.noteWrap .row{margin-top:8px}
+@media(max-width:900px){
+  /* 阅卷的操作区原来能吃掉半屏。三性挤一行，说明缩短，行距压紧。 */
+  #action .prompt.small{font-size:11.5px;line-height:1.55;margin-top:4px}
+  #action .chips{gap:6px}
+  #action .chips .chip{padding:8px 11px;font-size:13px}
+  #action .row .hint{font-size:11.5px}
+  #docview{padding-bottom:8px}
+}
 </style>
 </head>
 <body>
@@ -7975,15 +7985,26 @@ function fileActions(){
     </div>
     <div class="prompt small">标记不花精力，标错也不罚。庭上质证时，标对的地方你会更有底气。</div>` : "";
 
+  /* 窄屏上这一块原来能占掉半屏，正文被压得只剩一段。
+     备注框默认收起来，点「记一句」才展开。 */
   ui(`<div class="prompt">${esc(e.name)}　<b>精力 ${S.energy}</b></div>
     <div class="chips">${btns.join("") || `<span class="hint">这份看完了。</span>`}</div>
     ${markRow}
-    ${lv === 2 ? `<textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>` : ""}
+    ${lv === 2 ? `<div class="noteWrap" id="noteWrap" hidden>
+        <textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>
+        <div class="row"><button class="ghost" id="aNote">记下</button>${voiceBtn("noteBox")}</div>
+      </div>` : ""}
     <div class="row">
-      ${lv === 2 ? `<button class="ghost" id="aNote">记下</button>` + voiceBtn("noteBox") : ""}
+      ${lv === 2 ? `<button class="ghost" id="aNoteOpen">记一句</button>` : ""}
       <button class="ghost" id="leave">去法院</button>
       <span class="hint">${S.energy <= 0 ? "精力用完了。" : CASE.investigation.deskNote}</span>
     </div>`);
+  const nOpen = $("#aNoteOpen");
+  if(nOpen) nOpen.onclick = ()=>{
+    const w = $("#noteWrap"); if(!w) return;
+    w.hidden = !w.hidden; nOpen.hidden = !w.hidden ? true : false;
+    if(!w.hidden){ const t = $("#noteBox"); if(t) t.focus(); }
+  };
 
   if($("#aSkim"))  $("#aSkim").onclick  = ()=>{ S.energy -= c.skim; S.skim.add(id); refresh(); };
   if($("#aRead"))  $("#aRead").onclick  = ()=>{ S.energy -= c.read; S.skim.add(id); S.read.add(id); refresh(); };

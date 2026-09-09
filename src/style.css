@@ -548,3 +548,13 @@ body.phase-office #aside{display:none}
 
 .fLab{font-size:12.5px;color:var(--muted);margin-bottom:5px}
 #thm{margin-bottom:14px}
+
+.noteWrap .row{margin-top:8px}
+@media(max-width:900px){
+  /* 阅卷的操作区原来能吃掉半屏。三性挤一行，说明缩短，行距压紧。 */
+  #action .prompt.small{font-size:11.5px;line-height:1.55;margin-top:4px}
+  #action .chips{gap:6px}
+  #action .chips .chip{padding:8px 11px;font-size:13px}
+  #action .row .hint{font-size:11.5px}
+  #docview{padding-bottom:8px}
+}

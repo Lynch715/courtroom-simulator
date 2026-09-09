@@ -93,15 +93,26 @@ function fileActions(){
     </div>
     <div class="prompt small">标记不花精力，标错也不罚。庭上质证时，标对的地方你会更有底气。</div>` : "";
 
+  /* 窄屏上这一块原来能占掉半屏，正文被压得只剩一段。
+     备注框默认收起来，点「记一句」才展开。 */
   ui(`<div class="prompt">${esc(e.name)}　<b>精力 ${S.energy}</b></div>
     <div class="chips">${btns.join("") || `<span class="hint">这份看完了。</span>`}</div>
     ${markRow}
-    ${lv === 2 ? `<textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>` : ""}
+    ${lv === 2 ? `<div class="noteWrap" id="noteWrap" hidden>
+        <textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>
+        <div class="row"><button class="ghost" id="aNote">记下</button>${voiceBtn("noteBox")}</div>
+      </div>` : ""}
     <div class="row">
-      ${lv === 2 ? `<button class="ghost" id="aNote">记下</button>` + voiceBtn("noteBox") : ""}
+      ${lv === 2 ? `<button class="ghost" id="aNoteOpen">记一句</button>` : ""}
       <button class="ghost" id="leave">去法院</button>
       <span class="hint">${S.energy <= 0 ? "精力用完了。" : CASE.investigation.deskNote}</span>
     </div>`);
+  const nOpen = $("#aNoteOpen");
+  if(nOpen) nOpen.onclick = ()=>{
+    const w = $("#noteWrap"); if(!w) return;
+    w.hidden = !w.hidden; nOpen.hidden = !w.hidden ? true : false;
+    if(!w.hidden){ const t = $("#noteBox"); if(t) t.focus(); }
+  };
 
   if($("#aSkim"))  $("#aSkim").onclick  = ()=>{ S.energy -= c.skim; S.skim.add(id); refresh(); };
   if($("#aRead"))  $("#aRead").onclick  = ()=>{ S.energy -= c.read; S.skim.add(id); S.read.add(id); refresh(); };

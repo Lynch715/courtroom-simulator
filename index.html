@@ -1,4 +1,4 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:20 · 7 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:22 · 7 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -149,7 +149,7 @@ label.f input{
   display:block;width:100%;margin-top:5px;background:var(--ink);border:1px solid var(--line2);
   color:var(--paper);padding:8px 10px;font-size:14px;font-family:var(--sans);
 }
-.switch{display:flex;gap:10px;align-items:flex-start;padding:11px;border:1px solid var(--line);background:var(--panel2);margin-bottom:16px}
+.switch{display:flex;gap:10px;align-items:flex-start;padding:11px;border:1px solid var(--line);background:var(--panel2);margin-bottom:16px;cursor:pointer}
 .switch input{margin-top:2px;accent-color:var(--brass);width:18px;height:18px;flex:none}
 .switch div{font-size:12.5px;color:var(--muted)}
 .switch b{color:var(--paper);font-size:13.5px;display:block;font-weight:600}
@@ -161,12 +161,16 @@ label.f input{
   main{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
   .col.left,.col.right{border:none;border-bottom:1px solid var(--line);max-height:none}
   .col.left{order:3;display:none}
-  .col.right{order:1;display:flex;overflow:visible}
-  .col.right .scale{flex:1;border:none;padding:10px}
-  .col.right .scale svg{max-width:120px}
+  /* 窄屏把天平和数字并排，别让它吃掉四分之一屏 */
+  .col.right{order:1;display:flex;overflow:visible;align-items:center}
+  .col.right .scale{flex:1;border:none;padding:8px 12px;display:flex;align-items:center;
+    justify-content:center;gap:14px;text-align:left}
+  .col.right .scale svg{max-width:88px;flex:none}
+  .col.right .scale .val{font-size:26px;margin:0}
+  .col.right .scale .lab{white-space:nowrap}
   .ledger{display:none}
   body.showfile .col.left{display:block;order:2}
-  #record{padding:16px 16px 24px}
+  #record{padding:16px 16px 34px}
   #action{padding:12px 16px 16px}
   .brand span{display:none}
 
@@ -8477,10 +8481,10 @@ function openCfg(first){
   mask.innerHTML=`<div class="modal">
     <h3>接一个模型进来</h3>
     <p class="sub">密钥只存在你自己的浏览器里，不会发到别处。也可以先离线试手感。</p>
-    <div class="switch">
+    <label class="switch" for="off">
       <input type="checkbox" id="off" ${S.cfg.offline?"checked":""}>
       <div><b>离线试玩</b>不调用任何接口。公诉人说预写好的台词，你的辩论按关键词判定。用来摸机制手感够了，但对方不会真的回应你。</div>
-    </div>
+    </label>
     <label class="f">接口地址<input id="base" value="${S.cfg.base}" placeholder="https://api.deepseek.com"></label>
     <label class="f">模型<input id="model" value="${esc(S.cfg.model)}" placeholder="deepseek-v4-flash" list="modelList">
       <datalist id="modelList">

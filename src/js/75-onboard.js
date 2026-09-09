@@ -8,10 +8,10 @@ function openCfg(first){
   mask.innerHTML=`<div class="modal">
     <h3>接一个模型进来</h3>
     <p class="sub">密钥只存在你自己的浏览器里，不会发到别处。也可以先离线试手感。</p>
-    <div class="switch">
+    <label class="switch" for="off">
       <input type="checkbox" id="off" ${S.cfg.offline?"checked":""}>
       <div><b>离线试玩</b>不调用任何接口。公诉人说预写好的台词，你的辩论按关键词判定。用来摸机制手感够了，但对方不会真的回应你。</div>
-    </div>
+    </label>
     <label class="f">接口地址<input id="base" value="${S.cfg.base}" placeholder="https://api.deepseek.com"></label>
     <label class="f">模型<input id="model" value="${esc(S.cfg.model)}" placeholder="deepseek-v4-flash" list="modelList">
       <datalist id="modelList">

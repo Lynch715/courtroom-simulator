@@ -8,6 +8,7 @@
 function startMeet(){
   S.stage = PH.meet;
   document.body.classList.add("phase-meet");
+  if(typeof setPane === "function") setPane("mid");
   $("#talk").innerHTML = "";
   paint();
   const m = CASE.meeting;

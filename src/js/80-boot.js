@@ -58,6 +58,7 @@ function resumeGame(){
 
 /* 阅卷结束，进法庭 */
 function startTrial(){
+  if(typeof setPane === "function") setPane("mid");
   if(CASE.scenes && CASE.scenes.trial)
     rec.insertAdjacentHTML("beforeend", sceneBanner(CASE.scenes.trial, (CASE.lex && CASE.lex.venue) || "第一审判庭", ""));
   say("", "sys", CASE.openingNote);

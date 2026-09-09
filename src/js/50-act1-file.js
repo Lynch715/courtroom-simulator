@@ -9,6 +9,7 @@ let curEv = null;
 function startFile(){
   S.stage = PH.file;
   document.body.classList.add("phase-file");
+  if(typeof setPane === "function") setPane("left");   // 阅卷这一幕，卷宗列表是导航
   curEv = null;
   paint();
   renderDesk(CASE.investigation.intro + "\n\n" + CASE.investigation.deskNote,
@@ -67,7 +68,7 @@ function fileActions(){
   const c = CASE.investigation.costs;
   if(!curEv){
     /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
-    const where = window.matchMedia("(max-width:900px)").matches ? "上面" : "左边";
+    const where = window.matchMedia("(max-width:900px)").matches ? "「卷宗」那一格里" : "左边";
     ui(`<div class="prompt">从${where}挑一份材料开始。<b>精力 ${S.energy}</b>，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。</div>
       <div class="row"><button class="ghost" id="leave">直接去法院</button>
       <span class="hint">你也可以什么都不看就去。没人拦着。</span></div>`);

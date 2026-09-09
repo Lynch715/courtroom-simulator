@@ -68,6 +68,7 @@ function officeScreen(note){
   document.querySelector(".brand span").textContent = "事务所";
   document.body.classList.remove("phase-file", "phase-meet");
   document.body.classList.add("phase-office");
+  if(typeof setPane === "function") setPane("mid");
   $("#docview").innerHTML = "";
   $("#talk").innerHTML = "";
   rec.innerHTML = "";

@@ -55,7 +55,7 @@ const S = {
   /* 生涯 */
   career:{rep:0, cash:50000, conscience:0},
 
-  cfg:{base:"https://api.deepseek.com", key:"", model:"deepseek-v4-flash", offline:true}
+  cfg:{base:"https://api.deepseek.com", key:"", model:"deepseek-v4-flash", offline:true, theme:"dark"}
 };
 /* 按案件包初始化。换案子时再调一次。 */
 function resetCase(){
@@ -90,7 +90,11 @@ try{ const s=localStorage.getItem(CFG_KEY); if(s) Object.assign(S.cfg, JSON.pars
 /* 老存档里存的是已经下线的模型名，静默升级一次，免得玩家开局就报 404 */
 if(/^deepseek-(chat|reasoner)$/.test(S.cfg.model || ""))
   S.cfg.model = S.cfg.model === "deepseek-reasoner" ? "deepseek-v4-pro" : "deepseek-v4-flash";
-function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(S.cfg)); }catch(e){} }
+function applyTheme(){
+  document.documentElement.dataset.theme = (S.cfg.theme === "light") ? "light" : "dark";
+}
+function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(S.cfg)); }catch(e){} applyTheme(); }
+applyTheme();
 
 const $ = s=>document.querySelector(s);
 const rec = $("#record");

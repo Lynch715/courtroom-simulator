@@ -72,11 +72,12 @@ function officeScreen(note){
   $("#talk").innerHTML = "";
   rec.innerHTML = "";
 
-  /* 没打过的排前面，打过的接着排，最多列三张 */
+  /* 案子全列出来。以前只列三张——库里八个案子，玩家只看得见三个，
+     像是游戏只做了三关。没打过的排前面，打过的接着排。 */
   const pool = CASES.map(c=>c);
   const fresh = pool.filter(c=>META.done.indexOf(c.id) < 0);
   const old   = pool.filter(c=>META.done.indexOf(c.id) >= 0);
-  const show  = fresh.concat(old).slice(0, 3);
+  const show  = fresh.concat(old);
 
   rec.innerHTML = sceneBanner((CASE.scenes && CASE.scenes.office) || "scene/law_office",
                               "你的事务所", "")
@@ -89,13 +90,13 @@ function officeScreen(note){
         </div>
         ${META.log.length ? `<div class="wake"><h3>上一案之后</h3>${
           META.log.slice(-3).map(l=>`<p>${esc(l)}</p>`).join("")}</div>` : ""}
-        <h3 class="pickH">接哪个案子</h3>
+        <h3 class="pickH">接哪个案子<em class="pickN">${fresh.length ? fresh.length + " 个没打过" : "都打过了"}</em></h3>
         <div class="caseCards">${show.map(cardOf).join("")}</div>
         ${fresh.length === 0 ? `<p class="sub">这一期的案子你都打过了。再打一次也行——同一个案子，换个打法，结果不一样。</p>`
           : (old.length ? `<p class="sub">打过的案子也能重接。换个策略，结果不一样。</p>` : "")}
       </div>`;
   ui(`<div class="prompt">选一个案子。<b>接了就不能反悔。</b></div>
-      <div class="row"><span class="hint">案件库还在加，现在只有 ${CASES.length} 个</span></div>`);
+      <div class="row"><span class="hint">案件库共 ${CASES.length} 个，还在加</span></div>`);
   document.querySelectorAll(".caseCard").forEach(el=>el.onclick=()=>takeCase(el.dataset.id));
   paint();
 }

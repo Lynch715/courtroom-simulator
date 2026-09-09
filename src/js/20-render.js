@@ -92,6 +92,7 @@ function paint(){
   if(typeof mountAside === "function" && !document.querySelector("#asideSay")) mountAside();
   // 阶段条。在事务所时一格都不亮。
   /* data-n 是给窄屏用的：手机上只显示当前这一格，后面缀个 3/5 */
+  if(typeof paintTabs === "function") paintTabs();
   $("#stagebar").innerHTML = PHASES.map((ph,n)=>
     `<i data-n="${n+1}/${PHASES.length}" class="${S.stage<0?"":(n===S.stage?"on":(n<S.stage?"done":""))}">${ph.name}</i>`).join("");
 }
@@ -170,3 +171,39 @@ function castListHTML(){
       <span class="tag ${cls}">${esc(c.tag)}</span></div><div class="n">${esc(note)}</div></div>`;
   }).join("");
 }
+
+/* ══════════════ 窄屏面板切换 ══════════════
+ * 三栏在手机上一次只显示一屏，底部标签栏切换。
+ * 标签名跟着阶段走——阅卷时中栏是「材料」，庭审时是「笔录」。
+ * 桌面上标签栏是隐藏的，setPane 照样跑，不影响任何东西。
+ */
+const PANE_LABELS = {
+  file:    {left:"卷宗", mid:"材料",   right:"批注"},
+  meet:    {left:"材料", mid:"会见",   right:"信任"},
+  cross:   {left:"卷宗", mid:"笔录",   right:"心证"},
+  debate:  {left:"卷宗", mid:"笔录",   right:"心证"},
+  verdict: {left:"卷宗", mid:"笔录",   right:"心证"},
+};
+function setPane(p){
+  document.body.dataset.pane = p;
+  document.querySelectorAll("#tabbar button").forEach(b=>{
+    b.classList.toggle("on", b.dataset.pane === p);
+    if(b.dataset.pane === "mid"){ const d = b.querySelector(".dot"); if(d) d.hidden = (p === "mid"); }
+  });
+}
+function paintTabs(){
+  const ph = (S.stage >= 0 && PHASES[S.stage]) ? PHASES[S.stage].id : null;
+  const L = PANE_LABELS[ph] || PANE_LABELS.cross;
+  document.querySelectorAll("#tabbar button").forEach(b=>{
+    const t = b.querySelector(".ti"); if(t) t.textContent = L[b.dataset.pane] || "";
+  });
+  if(!document.body.dataset.pane) setPane("mid");
+}
+/* 轮到你说话了，而人还在别的屏上——给「笔录」那一格点个点 */
+function nudgeMid(){
+  if(document.body.dataset.pane === "mid") return;
+  const d = document.querySelector('#tabbar button[data-pane="mid"] .dot');
+  if(d) d.hidden = false;
+}
+document.querySelectorAll("#tabbar button").forEach(b=>b.onclick=()=>setPane(b.dataset.pane));
+setPane("mid");

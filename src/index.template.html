@@ -93,6 +93,14 @@
       <div id="meetSide"></div>
     </div>
   </main>
+
+  <!-- 窄屏用的底部标签栏。桌面隐藏。三栏在手机上原来是上下叠着的，
+       每一栏都只剩一条缝；改成一次只显示一屏，各自占满高度。 -->
+  <nav id="tabbar" aria-label="面板切换">
+    <button data-pane="left"><span class="ti">卷宗</span></button>
+    <button data-pane="mid" class="on"><span class="ti">笔录</span><i class="dot" hidden></i></button>
+    <button data-pane="right"><span class="ti">心证</span></button>
+  </nav>
 </div>
 <script>
 <!--INJECT:ARTDATA-->

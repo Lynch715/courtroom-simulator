@@ -12,6 +12,11 @@ function openCfg(first){
       <input type="checkbox" id="off" ${S.cfg.offline?"checked":""}>
       <div><b>离线试玩</b>不调用任何接口。公诉人说预写好的台词，你的辩论按关键词判定。用来摸机制手感够了，但对方不会真的回应你。</div>
     </label>
+    <div class="fLab">屏幕亮度</div>
+    <div class="chips" id="thm">
+      <button class="chip${S.cfg.theme==="light"?"":" sel"}" data-v="dark">暗色 · 庭上那种</button>
+      <button class="chip${S.cfg.theme==="light"?" sel":""}" data-v="light">亮色 · 白天看着不累</button>
+    </div>
     <label class="f">接口地址<input id="base" value="${S.cfg.base}" placeholder="https://api.deepseek.com"></label>
     <label class="f">模型<input id="model" value="${esc(S.cfg.model)}" placeholder="deepseek-v4-flash" list="modelList">
       <datalist id="modelList">
@@ -28,6 +33,11 @@ function openCfg(first){
     <span class="hint">任何 OpenAI 兼容接口都行</span></div>
   </div>`;
   document.body.appendChild(mask);
+  /* 主题即点即换，不用等「开庭」 */
+  mask.querySelectorAll("#thm .chip").forEach(b=>b.onclick=()=>{
+    mask.querySelectorAll("#thm .chip").forEach(x=>x.classList.remove("sel"));
+    b.classList.add("sel"); S.cfg.theme = b.dataset.v; applyTheme();
+  });
   mask.querySelectorAll("#mdl .chip").forEach(b=>b.onclick=()=>{
     mask.querySelector("#model").value = b.dataset.v;
     mask.querySelectorAll("#mdl .chip").forEach(x=>x.classList.remove("sel"));

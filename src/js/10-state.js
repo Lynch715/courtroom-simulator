@@ -91,7 +91,15 @@ try{ const s=localStorage.getItem(CFG_KEY); if(s) Object.assign(S.cfg, JSON.pars
 if(/^deepseek-(chat|reasoner)$/.test(S.cfg.model || ""))
   S.cfg.model = S.cfg.model === "deepseek-reasoner" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 function applyTheme(){
-  document.documentElement.dataset.theme = (S.cfg.theme === "light") ? "light" : "dark";
+  const light = (S.cfg.theme === "light");
+  document.documentElement.dataset.theme = light ? "light" : "dark";
+  /* 加到桌面按独立应用起的时候，状态栏那一条要跟着换，
+     不然亮色主题顶上还挂着一条黑边。 */
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.remove());
+  const m = document.createElement("meta");
+  m.name = "theme-color";
+  m.content = light ? "#F2EFE8" : "#1C232B";
+  document.head.appendChild(m);
 }
 function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(S.cfg)); }catch(e){} applyTheme(); }
 applyTheme();

@@ -73,7 +73,7 @@ function fileActions(){
     /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
     const where = window.matchMedia("(max-width:900px)").matches ? "「卷宗」那一格里" : "左边";
     ui(`<div class="prompt">${where}那一沓，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。<b>今晚你有 ${S.energy} 点。</b></div>
-      <div class="row"><button class="ghost" id="leave">直接去法院</button>
+      <div class="row"><button class="ghost" id="leave">${nextStopLabel().btn}</button>
       <span class="hint">天亮之前，桌上这些看不完。</span></div>`);
     $("#leave").onclick = confirmLeave;
     return;
@@ -104,7 +104,7 @@ function fileActions(){
       </div>` : ""}
     <div class="row">
       ${lv === 2 ? `<button class="ghost" id="aNoteOpen">记一句</button>` : ""}
-      <button class="ghost" id="leave">去法院</button>
+      <button class="ghost" id="leave">${nextStopLabel().btn}</button>
       <span class="hint">${S.energy <= 0 ? "精力用完了。" : CASE.investigation.deskNote}</span>
     </div>`);
   const nOpen = $("#aNoteOpen");
@@ -149,17 +149,27 @@ async function doThink(id){
   refresh();
 }
 
+
+/* 阅卷之后是会见，不是开庭。按钮上写去哪儿，就照案件包里的会见地点写。 */
+function nextStopLabel(){
+  const pl = (CASE.meeting && CASE.meeting.place) || "";
+  if(/看守所/.test(pl)) return {btn:"去看守所", where:"看守所"};
+  if(/事务所/.test(pl)) return {btn:"去见当事人", where:"事务所"};
+  return {btn:"去见当事人", where:pl || "会见室"};
+}
+
 /* ---------- 离场 ---------- */
 function confirmLeave(){
   const unread = Object.keys(CASE.ev).filter(k=>!S.read.has(k));
   const warn = unread.length
     ? `还有 ${unread.length} 份没细读：${unread.map(k=>CASE.ev[k].name).join("、")}。`
     : `三册都读完了。`;
-  ui(`<div class="prompt">${warn}<b>出了这个门就是明天早上。</b></div>
+  const nx = nextStopLabel();
+  ui(`<div class="prompt">${warn}<b>合上卷宗，天就亮了。</b></div>
     <div class="row">
-      <button class="primary" id="yes">去法院</button>
+      <button class="primary" id="yes">${nx.btn}</button>
       <button class="ghost" id="no">再看看</button>
-      <span class="hint">还剩 ${S.energy} 点精力</span>
+      <span class="hint">还剩 ${S.energy} 点精力　·　下一站 ${nx.where}</span>
     </div>`);
   $("#no").onclick = fileActions;
   $("#yes").onclick = endFile;

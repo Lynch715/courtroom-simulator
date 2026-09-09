@@ -26,3 +26,24 @@ function toast(msg){
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(()=>el.classList.remove("on"), 3200);
 }
+
+/* ── 手机上禁掉缩放 ──────────────────────────────
+ * viewport 里写了 user-scalable=no，但 iOS Safari 从 10 起就不认这个了。
+ * 得自己拦：双指捏合走 gesture 事件，双击放大走 touchend。
+ * 输入框对焦时的自动放大另算——那个靠 font-size ≥16px 压住，在 CSS 里。 */
+(function noZoom(){
+  const stop = e => { e.preventDefault(); };
+  ["gesturestart", "gesturechange", "gestureend"].forEach(t =>
+    document.addEventListener(t, stop, { passive: false }));
+
+  document.addEventListener("touchmove", e => {
+    if(e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
+  let last = 0;
+  document.addEventListener("touchend", e => {
+    const now = Date.now();
+    if(now - last < 320) e.preventDefault();
+    last = now;
+  }, { passive: false });
+})();

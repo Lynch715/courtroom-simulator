@@ -174,9 +174,30 @@ function endTalk(){
       trust(-15, "他不想这么打");
       talkSys("他不同意，但他没有别的选择。");
     }
-    setTimeout(endMeet, 900);
+    /* 定完策略不直接开庭。开庭是玩家自己按的一步——
+       这是第三幕的门，藏在一个 setTimeout 里不合适。 */
+    setTimeout(goCourtGate, 900);
   };
   paint();
+}
+
+/* 会见结束到开庭之间的那一步。写清楚这一趟去哪、带着什么去。 */
+function goCourtGate(){
+  const st = (CASE.meeting.strategies || []).find(x=>x.id === S.strategy);
+  const known = S.known.length, kp = Object.keys(CASE.kp).length;
+  const venue = (CASE.lex && CASE.lex.venue) || "第一审判庭";
+  const going = (CASE.lex && CASE.lex.courtN) || "法院";
+  /* 一条都没问出来的时候别硬报个 0，那句话读着像结算面板。 */
+  const gain = known
+    ? `你手上有<b>${known} 条他亲口说的事</b>，庭上有 ${kp} 个论点可以立。`
+    : `他什么也没多说。庭上那 ${kp} 个论点，得你自己一个人立。`;
+  ui(`<div class="prompt">会见结束。${gain}
+      这个案子你打算做<b>${esc(st ? st.label : "")}</b>。</div>
+    <div class="row">
+      <button class="primary big" id="toCourt">去${going}</button>
+      <span class="hint">${esc(venue)}　·　进去了就不能再回来问他</span>
+    </div>`);
+  $("#toCourt").onclick = endMeet;
 }
 
 function endMeet(){

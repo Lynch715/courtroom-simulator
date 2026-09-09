@@ -21,6 +21,24 @@
   --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --serif:"Songti SC","Source Han Serif SC","Noto Serif CJK SC","SimSun",serif;
 }
+/* 缩放全禁。双击放大交给 touch-action，捏合交给 05-util.js 里的拦截。
+ * 独立应用起的时候还要顶开刘海和底部小黑条。 */
+html{
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+}
+/* 独立应用起的时候顶开刘海。底下那条不在这儿加——
+ * tabbar 自己已经垫了 safe-area-inset-bottom，加两回会空出一大块。 */
+body{
+  overscroll-behavior:none;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+
 html[data-theme="light"]{
   --scrim:rgba(70,62,45,.42);
   --veil:250,247,240;
@@ -486,7 +504,9 @@ body.phase-meet #aside{display:none}
 body.phase-office .col.left,body.phase-office .col.right{display:none}
 body.phase-office main{grid-template-columns:minmax(0,1fr)}
 body.phase-office #aside{display:none}
-.office{max-width:74ch;padding-bottom:10px}
+/* 事务所是单栏。宽屏上不居中的话，右半边空一大块，像页面没加载完。 */
+.office{max-width:74ch;margin:0 auto;padding-bottom:10px}
+body.phase-office .col.mid > *{max-width:74ch;margin-left:auto;margin-right:auto;width:100%}
 .tracks{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
 .tracks .tk{flex:1;min-width:150px;border:1px solid var(--line);background:var(--panel);padding:12px 14px}
 .tracks .tk b{display:block;font-family:var(--serif);font-size:22px;line-height:1.2}
@@ -585,3 +605,21 @@ body.phase-office #aside{display:none}
 .knownList .e.blank{color:var(--muted);font-size:12.5px;line-height:1.8;border-bottom:none}
 .knownList .e.lie q{color:var(--pros)}
 .knownList .e.busted q{color:var(--ok)}
+
+/* 进入下一幕那种一级动作，按钮做大一点 */
+.primary.big{padding:12px 26px;font-size:15px;letter-spacing:.06em}
+
+/* 卷宗栏顶上的起诉书摘要 */
+.briefCard{border:1px solid var(--line);background:var(--panel2);padding:12px 13px}
+.briefCard .bh{font-family:var(--serif);font-size:15px;color:var(--paper);line-height:1.35}
+.briefCard .bs{font-size:11.5px;color:var(--brass);letter-spacing:.08em;margin:3px 0 9px}
+.briefCard .bb{font-size:12.5px;line-height:1.85;color:var(--text);margin:0;white-space:pre-wrap}
+.briefCard .bf{display:flex;flex-wrap:wrap;gap:10px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+
+/* iOS 对焦输入框时，字号不足 16px 会自动把整页推近一档，
+ * 推近了就退不回来（缩放已禁）。只动会对焦的那几个。 */
+@media (max-width:900px){
+  textarea, input[type=text], input[type=password], input[type=url],
+  input[type=number], input[type=search], select{ font-size:16px; }
+  textarea::placeholder{ font-size:14.5px; }
+}

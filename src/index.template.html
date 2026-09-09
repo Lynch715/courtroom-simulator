@@ -2,7 +2,21 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1C232B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3EFE6" media="(prefers-color-scheme: light)">
+<meta name="description" content="一款中文庭审模拟：读卷、会见、开庭，靠证据一分一分挣审判长的心证。">
+<!-- 加到手机桌面之后，按独立应用起，不带浏览器地址栏 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="心证">
+<meta name="application-name" content="心证">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
 <title>心证 · 庭审模拟</title>
 <style>
 <!--INJECT:CSS-->
@@ -28,6 +42,14 @@
 
   <main>
     <div class="col left" id="fileCol">
+      <!-- 案情摘要。以前只喂给模型，玩家看不到，等于开局不知道自己在辩什么。 -->
+      <div class="sect" id="briefSect">
+        <h2>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 2h8v12H4z"/><path d="M6 5.5h4M6 8h4M6 10.5h2.5"/></svg>
+          起诉书
+        </h2>
+        <div id="briefBox"></div>
+      </div>
       <div class="sect">
         <h2>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3.5h4.5l1.2 1.6H14v7.4H2z"/></svg>

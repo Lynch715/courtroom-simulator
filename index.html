@@ -1,9 +1,23 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T10:41 · 8 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T11:29 · 8 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1C232B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3EFE6" media="(prefers-color-scheme: light)">
+<meta name="description" content="一款中文庭审模拟：读卷、会见、开庭，靠证据一分一分挣审判长的心证。">
+<!-- 加到手机桌面之后，按独立应用起，不带浏览器地址栏 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="心证">
+<meta name="application-name" content="心证">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
 <title>心证 · 庭审模拟</title>
 <style>
 /* ══════════════ 配色 ══════════════
@@ -29,6 +43,24 @@
   --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   --serif:"Songti SC","Source Han Serif SC","Noto Serif CJK SC","SimSun",serif;
 }
+/* 缩放全禁。双击放大交给 touch-action，捏合交给 05-util.js 里的拦截。
+ * 独立应用起的时候还要顶开刘海和底部小黑条。 */
+html{
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+}
+/* 独立应用起的时候顶开刘海。底下那条不在这儿加——
+ * tabbar 自己已经垫了 safe-area-inset-bottom，加两回会空出一大块。 */
+body{
+  overscroll-behavior:none;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+
 html[data-theme="light"]{
   --scrim:rgba(70,62,45,.42);
   --veil:250,247,240;
@@ -494,7 +526,9 @@ body.phase-meet #aside{display:none}
 body.phase-office .col.left,body.phase-office .col.right{display:none}
 body.phase-office main{grid-template-columns:minmax(0,1fr)}
 body.phase-office #aside{display:none}
-.office{max-width:74ch;padding-bottom:10px}
+/* 事务所是单栏。宽屏上不居中的话，右半边空一大块，像页面没加载完。 */
+.office{max-width:74ch;margin:0 auto;padding-bottom:10px}
+body.phase-office .col.mid > *{max-width:74ch;margin-left:auto;margin-right:auto;width:100%}
 .tracks{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
 .tracks .tk{flex:1;min-width:150px;border:1px solid var(--line);background:var(--panel);padding:12px 14px}
 .tracks .tk b{display:block;font-family:var(--serif);font-size:22px;line-height:1.2}
@@ -593,6 +627,24 @@ body.phase-office #aside{display:none}
 .knownList .e.blank{color:var(--muted);font-size:12.5px;line-height:1.8;border-bottom:none}
 .knownList .e.lie q{color:var(--pros)}
 .knownList .e.busted q{color:var(--ok)}
+
+/* 进入下一幕那种一级动作，按钮做大一点 */
+.primary.big{padding:12px 26px;font-size:15px;letter-spacing:.06em}
+
+/* 卷宗栏顶上的起诉书摘要 */
+.briefCard{border:1px solid var(--line);background:var(--panel2);padding:12px 13px}
+.briefCard .bh{font-family:var(--serif);font-size:15px;color:var(--paper);line-height:1.35}
+.briefCard .bs{font-size:11.5px;color:var(--brass);letter-spacing:.08em;margin:3px 0 9px}
+.briefCard .bb{font-size:12.5px;line-height:1.85;color:var(--text);margin:0;white-space:pre-wrap}
+.briefCard .bf{display:flex;flex-wrap:wrap;gap:10px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+
+/* iOS 对焦输入框时，字号不足 16px 会自动把整页推近一档，
+ * 推近了就退不回来（缩放已禁）。只动会对焦的那几个。 */
+@media (max-width:900px){
+  textarea, input[type=text], input[type=password], input[type=url],
+  input[type=number], input[type=search], select{ font-size:16px; }
+  textarea::placeholder{ font-size:14.5px; }
+}
 </style>
 </head>
 <body>
@@ -615,6 +667,14 @@ body.phase-office #aside{display:none}
 
   <main>
     <div class="col left" id="fileCol">
+      <!-- 案情摘要。以前只喂给模型，玩家看不到，等于开局不知道自己在辩什么。 -->
+      <div class="sect" id="briefSect">
+        <h2>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 2h8v12H4z"/><path d="M6 5.5h4M6 8h4M6 10.5h2.5"/></svg>
+          起诉书
+        </h2>
+        <div id="briefBox"></div>
+      </div>
       <div class="sect">
         <h2>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3.5h4.5l1.2 1.6H14v7.4H2z"/></svg>
@@ -1125,7 +1185,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n卷宗摊在桌上，一共三册——两册是公诉人移送的，一册是你自己申请调取的银行运维日志，那份东西银行本来不打算给。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。先去看守所见他一面。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -1285,11 +1345,11 @@ const CASES = [
       "pool": {
         "low": [
           "嗯。",
-          "……",
-          "你问吧。",
-          "我说了有用吗。",
-          "都写在里面了。",
-          "律师，我要判几年。"
+          "都写在里面了，你看笔录就行。",
+          "我这两天想的是我妈。她七十了，不知道有没有人跟她说。",
+          "那台机器的事我没什么好讲的。你要问，我就说，反正也就那样。",
+          "我在这儿一天睡不了三个钟头。灯不关。你说我脑子还能想清楚什么。",
+          "律师，我就问一句，判几年。别的你说了我也听不进去。"
         ],
         "mid": [
           "那天我下夜班。",
@@ -1311,9 +1371,9 @@ const CASES = [
         ],
         "press": [
           "我说了。",
-          "你跟他们一样。",
-          "……",
-          "我不想说了。",
+          "这个我刚讲过一遍。",
+          "你跟他们问的一样，一句一句往下扣。",
+          "我不想再讲那天晚上了。讲一遍我就得再过一遍。",
           "问了三遍了。"
         ],
         "hostile": [
@@ -1917,7 +1977,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n三册卷宗，一册鉴定意见，一册现场勘验，还有一张你自己从她家里翻出来的进货单。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。先去会见室见她一面。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -2075,12 +2135,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
-          "我不识字多。",
-          "那是打气球的。",
-          "律师，我要坐牢吗。",
-          "我摆了六年了。",
-          "……你问吧。"
+          "打气球的。",
+          "那个摊子我摆了六年，河边那一条街上谁不认识我。",
+          "他们从我车上搬走的时候，我还问人家，这个要不要开个条子给我。",
+          "我识字不多。他们让我签，我就签了。签的什么我没看明白，也不好意思问。",
+          "我孙子在上初中。我进来这些天，不知道谁给他做饭。",
+          "你说这是枪。这话你跟我说没用，你去跟摆摊的人说说看，看谁信。"
         ],
         "mid": [
           "那天下着雨，人少。",
@@ -2100,11 +2160,10 @@ const CASES = [
           "我要是真知道那是枪，我贴张纸条有什么用。我把摊子收了不就完了。"
         ],
         "press": [
-          "我说了。",
-          "我真不知道。",
-          "……",
-          "你别问了。",
-          "问几遍都是这样。"
+          "我说过了。",
+          "这话我讲了多少回了，讲得我自己都烦。",
+          "你要我怎么讲。我知道的就这些，编我也编不出来。",
+          "我岁数大了，你一直问，我脑子就乱。"
         ],
         "hostile": [
           "那你别管了。",
@@ -2652,7 +2711,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n血液检验报告，监控轨迹，还有一沓赔偿凭证——那是他父母卖房子换来的。\n公诉机关建议死刑。你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。先去看守所见他一面。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -2807,12 +2866,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
           "……",
-          "你问吧。",
-          "我认。",
-          "说这些还有用吗。",
-          "律师，判死刑是什么时候执行。"
+          "你别费劲了。",
+          "四个人。我夜里闭上眼就是那个数。",
+          "他们家属来过，隔着门骂我。骂得对。我没什么可辩的。",
+          "那天我从饭店出来，车钥匙在我手上转了两下。就那两下。我要是没转，就没这个事。",
+          "我不问判几年。判什么我都认。你不用跟我讲那些。"
         ],
         "mid": [
           "那天下着小雨。",
@@ -2833,10 +2892,9 @@ const CASES = [
         ],
         "press": [
           "我说了。",
-          "我真的不记得了。",
-          "……",
-          "你别问了。",
-          "问几遍都一样。"
+          "还问。你想让我说什么。",
+          "你问一遍我死一回。你要是非要听，我就再说一遍。",
+          "我不说了。"
         ],
         "hostile": [
           "那你别管了。",
@@ -3412,7 +3470,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n三份法医鉴定，一份接处警记录，一段三小时二十分钟的接待室监控。\n还有一沓借条和还款凭证，是他母亲攒下来的。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。先去看守所见他一面。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -3573,12 +3631,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
-          "……",
-          "你问吧。",
-          "判多少我认。",
-          "问这些有用吗。",
-          "我不后悔。"
+          "我不后悔。",
+          "那几个人在我妈面前干的事，你要是看见了，你也拿刀。",
+          "笔录上写我情绪激动。我情绪当然激动，我妈坐在那儿呢。",
+          "我在这儿，我妈在外头，她心脏不好。这个我一想就受不了。",
+          "警察当时就在屋里站着。这句话我跟每一个来问的人都说过一遍了。",
+          "你要是来劝我认错的，那咱们就不用往下说了。"
         ],
         "mid": [
           "那天下午一直有人进出。",
@@ -3599,11 +3657,10 @@ const CASES = [
           "刀在茶几上，中午他们切西瓜剩下的。我站起来往门口走，手扫过去就带上了。我没找它，它就在那儿。"
         ],
         "press": [
-          "我说了。",
-          "就是这样。",
-          "……",
-          "你别问了。",
-          "问几遍都一样。"
+          "我说过了。",
+          "你要我说几遍。",
+          "这段我讲了三次了，每次都是一样的话。",
+          "再问也是这些。你不信可以去问我妈。"
         ],
         "hostile": [
           "那你别管了。",
@@ -4220,7 +4277,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "听证会前一晚。\n一份尸检鉴定，一份四分十二秒的路口监控和它的时间标注表，一沓只有首页的前科材料。\n还有你自己去现场量回来的平面图。\n你有一晚上。",
-      "outro": "天亮了。该去检察院了。",
+      "outro": "天亮了。先去看守所见他一面。",
       "deskNote": "读得越细，会上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -4382,11 +4439,11 @@ const CASES = [
       "pool": {
         "low": [
           "对不起。",
-          "嗯。",
-          "……",
-          "你问吧。",
-          "都怪我。",
-          "律师，我要判多少年。"
+          "我认，全认。你说怎么办我就怎么办。",
+          "我家里已经跟他们谈了。该赔的赔，一分不少。",
+          "我不知道该说什么。我一句话说错，下回见你可能就换个地方了。",
+          "那天早上我出门的时候还好好的。到现在我都没想明白是怎么走到这一步的。",
+          "你要什么材料我都给。银行流水、单位的、我父母的，你说一声。"
         ],
         "mid": [
           "那天下班晚了点。",
@@ -4407,10 +4464,9 @@ const CASES = [
         ],
         "press": [
           "我说了。",
-          "是我不对。",
-          "……",
-          "你别问了。",
-          "问几遍都是这样。"
+          "这个我讲过。",
+          "你要什么我都给了。你还想让我说什么。",
+          "我不想再说那天的事。"
         ],
         "hostile": [
           "那你别管我了。",
@@ -4997,7 +5053,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n一份核算说明，一份粮食局的监管情况说明，一沓现场检查笔录和扣押清单。\n还有他自己拿来的那本台账，一百三十七户的名字，字迹各不相同。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。他说上午到事务所来。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -5158,12 +5214,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
-          "……",
-          "你问吧。",
           "我认。",
-          "判缓刑就行。",
-          "律师，罚金能不能少点。"
+          "我就是个收苞米的，一斤挣两分钱。",
+          "那个证我不知道要办。街上收粮的谁办过那个东西，你去问问。",
+          "认了能回家吗。他们说认了就快。我想快点回去，地里还有活。",
+          "我媳妇来过。她把家里那点钱都取出来了，塞给我妹，让她给我请人。",
+          "你别跟我讲那些法条了，我听不懂。你就说我能不能回去。"
         ],
         "mid": [
           "去年秋天雨多。",
@@ -5184,10 +5240,9 @@ const CASES = [
         ],
         "press": [
           "我说了。",
-          "就是这样。",
-          "……",
-          "你别问了。",
-          "问几遍都一样。"
+          "我就知道这些。",
+          "你老问我，我也是这么两句。我要是能多说，早说了。",
+          "别问了行不行。"
         ],
         "hostile": [
           "那算了。",
@@ -5774,7 +5829,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n一份药检报告，三个账户四年的流水，八十七张翻拍的群聊截屏，一份一千零二人的名单。\n还有他自己送来的那摞随访记录，二百一十四份，每一份底下都有签名。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。他说上午到事务所来。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -5935,11 +5990,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
-          "这个我整理过，回头给你。",
-          "你问吧。",
-          "我认罪不认罪都行。",
-          "后面那些人怎么办。"
+          "我没卖。",
+          "我自己也吃这个药。这话我跟谁说谁都不信。",
+          "群里一千多号人，你去问问，有一个说我赚过他钱的没有。",
+          "我把印度那边的收据都留着，一张没扔。你要不要，我让我老婆给你送来。",
+          "他们说我是销售。销售是要挣钱的。我一分没挣，我还倒贴运费。",
+          "我这个病等不起。我进来这些天，外头有多少人断药，你知道吗。"
         ],
         "mid": [
           "群是二零一几年建的。",
@@ -5959,11 +6015,10 @@ const CASES = [
           "群里还有三个人在帮忙。一个管翻译，一个管统计，还有一个……算了，这个我不能说。"
         ],
         "press": [
-          "我说了。",
-          "就是我一个人。",
-          "……",
-          "你别问了。",
-          "问几遍都一样。"
+          "我说过了。",
+          "这个我讲过一遍。",
+          "你翻翻笔录，一模一样的话我说了不下五遍。",
+          "你们都问这一句。"
         ],
         "hostile": [
           "那你别接这个案子。",
@@ -6551,7 +6606,7 @@ const CASES = [
       },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n一份鉴定意见，三次讯问笔录，一张查获清单。\n还有他家属送来的三本育雏记录，纸都磨毛了，每一窝几只、哪天出的，写得比卷宗还整齐。\n你有一晚上。",
-      "outro": "天亮了。该去法院了。",
+      "outro": "天亮了。他说上午到事务所来。",
       "deskNote": "读得越细，庭上越有底。但你熬不过这一晚上的全部。",
       "offlineThink": {
         "e1": [
@@ -6712,12 +6767,12 @@ const CASES = [
       },
       "pool": {
         "low": [
-          "嗯。",
-          "……",
-          "你问吧。",
-          "我认。",
-          "判轻点就行。",
-          "那些鸟谁在喂。"
+          "我不翻。",
+          "我说过的话我就认，翻来翻去像什么样子。",
+          "那两只是我自己孵的。从蛋开始，我记着日子的，本子上都写着。",
+          "笔录上写我明知。当时问得急，我就顺着说了。现在再改，你说谁信。",
+          "我在网上挂了个价，五百。买的人还没提走，人就来了。",
+          "我爸妈在老家，还不知道这个事。我不想让他们知道。"
         ],
         "mid": [
           "本子上都记着。",
@@ -6739,10 +6794,9 @@ const CASES = [
         ],
         "press": [
           "我说了。",
-          "我说过的话不改。",
-          "……",
-          "你别问了。",
-          "问几遍都一样。"
+          "还是那句话。",
+          "这一段我从派出所讲到这儿，一个字没改过。",
+          "你再问，我还是这么说。"
         ],
         "hostile": [
           "那算了。",
@@ -6918,6 +6972,27 @@ function toast(msg){
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(()=>el.classList.remove("on"), 3200);
 }
+
+/* ── 手机上禁掉缩放 ──────────────────────────────
+ * viewport 里写了 user-scalable=no，但 iOS Safari 从 10 起就不认这个了。
+ * 得自己拦：双指捏合走 gesture 事件，双击放大走 touchend。
+ * 输入框对焦时的自动放大另算——那个靠 font-size ≥16px 压住，在 CSS 里。 */
+(function noZoom(){
+  const stop = e => { e.preventDefault(); };
+  ["gesturestart", "gesturechange", "gestureend"].forEach(t =>
+    document.addEventListener(t, stop, { passive: false }));
+
+  document.addEventListener("touchmove", e => {
+    if(e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
+  let last = 0;
+  document.addEventListener("touchend", e => {
+    const now = Date.now();
+    if(now - last < 320) e.preventDefault();
+    last = now;
+  }, { passive: false });
+})();
 /* ─────── src/js/10-state.js ─────── */
 /* 10-state.js —— 全局状态与设置存档
  *
@@ -7012,7 +7087,15 @@ try{ const s=localStorage.getItem(CFG_KEY); if(s) Object.assign(S.cfg, JSON.pars
 if(/^deepseek-(chat|reasoner)$/.test(S.cfg.model || ""))
   S.cfg.model = S.cfg.model === "deepseek-reasoner" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 function applyTheme(){
-  document.documentElement.dataset.theme = (S.cfg.theme === "light") ? "light" : "dark";
+  const light = (S.cfg.theme === "light");
+  document.documentElement.dataset.theme = light ? "light" : "dark";
+  /* 加到桌面按独立应用起的时候，状态栏那一条要跟着换，
+     不然亮色主题顶上还挂着一条黑边。 */
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.remove());
+  const m = document.createElement("meta");
+  m.name = "theme-color";
+  m.content = light ? "#F2EFE8" : "#1C232B";
+  document.head.appendChild(m);
 }
 function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(S.cfg)); }catch(e){} applyTheme(); }
 applyTheme();
@@ -7061,6 +7144,7 @@ function paint(){
     </div>`;
   }).join("");
   // 证据：阅卷阶段是可点的卷宗清单，庭上是在卷证据
+  if($("#briefBox")) $("#briefBox").innerHTML = briefHTML();
   if($("#evTitle")) $("#evTitle").textContent =
     S.stage === PH.file ? "卷宗" : S.stage === PH.meet ? "你手上的材料" : "在卷证据";
   if(S.stage < 0){ /* 事务所：左右栏都不用渲染 */ }
@@ -7238,6 +7322,19 @@ function nudgeMid(){
 }
 document.querySelectorAll("#tabbar button").forEach(b=>b.onclick=()=>setPane(b.dataset.pane));
 setPane("mid");
+
+/* 起诉书那一块。开局就该知道自己在辩什么。 */
+function briefHTML(){
+  const m = PACK.meta || {}, c = CASE;
+  const fee = m.fee ? `<span>律师费 ${(m.fee/10000).toFixed(1)} 万</span>` : "";
+  const ask = c.penaltyAsk ? `<span>${esc(c.penaltyAsk)}</span>` : "";
+  return `<div class="briefCard">
+      <div class="bh">${esc(m.title || c.title || "")}</div>
+      <div class="bs">${esc(m.subtitle || c.charge || "")}</div>
+      <p class="bb">${esc(c.brief || "")}</p>
+      <div class="bf">${ask}${fee}</div>
+    </div>`;
+}
 /* ─────── src/js/25-ui.js ─────── */
 /* 25-ui.js —— 操作区构建器 */
 /* ============================================================
@@ -8374,7 +8471,7 @@ function fileActions(){
     /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
     const where = window.matchMedia("(max-width:900px)").matches ? "「卷宗」那一格里" : "左边";
     ui(`<div class="prompt">${where}那一沓，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。<b>今晚你有 ${S.energy} 点。</b></div>
-      <div class="row"><button class="ghost" id="leave">直接去法院</button>
+      <div class="row"><button class="ghost" id="leave">${nextStopLabel().btn}</button>
       <span class="hint">天亮之前，桌上这些看不完。</span></div>`);
     $("#leave").onclick = confirmLeave;
     return;
@@ -8405,7 +8502,7 @@ function fileActions(){
       </div>` : ""}
     <div class="row">
       ${lv === 2 ? `<button class="ghost" id="aNoteOpen">记一句</button>` : ""}
-      <button class="ghost" id="leave">去法院</button>
+      <button class="ghost" id="leave">${nextStopLabel().btn}</button>
       <span class="hint">${S.energy <= 0 ? "精力用完了。" : CASE.investigation.deskNote}</span>
     </div>`);
   const nOpen = $("#aNoteOpen");
@@ -8450,17 +8547,27 @@ async function doThink(id){
   refresh();
 }
 
+
+/* 阅卷之后是会见，不是开庭。按钮上写去哪儿，就照案件包里的会见地点写。 */
+function nextStopLabel(){
+  const pl = (CASE.meeting && CASE.meeting.place) || "";
+  if(/看守所/.test(pl)) return {btn:"去看守所", where:"看守所"};
+  if(/事务所/.test(pl)) return {btn:"去见当事人", where:"事务所"};
+  return {btn:"去见当事人", where:pl || "会见室"};
+}
+
 /* ---------- 离场 ---------- */
 function confirmLeave(){
   const unread = Object.keys(CASE.ev).filter(k=>!S.read.has(k));
   const warn = unread.length
     ? `还有 ${unread.length} 份没细读：${unread.map(k=>CASE.ev[k].name).join("、")}。`
     : `三册都读完了。`;
-  ui(`<div class="prompt">${warn}<b>出了这个门就是明天早上。</b></div>
+  const nx = nextStopLabel();
+  ui(`<div class="prompt">${warn}<b>合上卷宗，天就亮了。</b></div>
     <div class="row">
-      <button class="primary" id="yes">去法院</button>
+      <button class="primary" id="yes">${nx.btn}</button>
       <button class="ghost" id="no">再看看</button>
-      <span class="hint">还剩 ${S.energy} 点精力</span>
+      <span class="hint">还剩 ${S.energy} 点精力　·　下一站 ${nx.where}</span>
     </div>`);
   $("#no").onclick = fileActions;
   $("#yes").onclick = endFile;
@@ -8650,9 +8757,30 @@ function endTalk(){
       trust(-15, "他不想这么打");
       talkSys("他不同意，但他没有别的选择。");
     }
-    setTimeout(endMeet, 900);
+    /* 定完策略不直接开庭。开庭是玩家自己按的一步——
+       这是第三幕的门，藏在一个 setTimeout 里不合适。 */
+    setTimeout(goCourtGate, 900);
   };
   paint();
+}
+
+/* 会见结束到开庭之间的那一步。写清楚这一趟去哪、带着什么去。 */
+function goCourtGate(){
+  const st = (CASE.meeting.strategies || []).find(x=>x.id === S.strategy);
+  const known = S.known.length, kp = Object.keys(CASE.kp).length;
+  const venue = (CASE.lex && CASE.lex.venue) || "第一审判庭";
+  const going = (CASE.lex && CASE.lex.courtN) || "法院";
+  /* 一条都没问出来的时候别硬报个 0，那句话读着像结算面板。 */
+  const gain = known
+    ? `你手上有<b>${known} 条他亲口说的事</b>，庭上有 ${kp} 个论点可以立。`
+    : `他什么也没多说。庭上那 ${kp} 个论点，得你自己一个人立。`;
+  ui(`<div class="prompt">会见结束。${gain}
+      这个案子你打算做<b>${esc(st ? st.label : "")}</b>。</div>
+    <div class="row">
+      <button class="primary big" id="toCourt">去${going}</button>
+      <span class="hint">${esc(venue)}　·　进去了就不能再回来问他</span>
+    </div>`);
+  $("#toCourt").onclick = endMeet;
 }
 
 function endMeet(){

@@ -39,6 +39,7 @@ function paint(){
     </div>`;
   }).join("");
   // 证据：阅卷阶段是可点的卷宗清单，庭上是在卷证据
+  if($("#briefBox")) $("#briefBox").innerHTML = briefHTML();
   if($("#evTitle")) $("#evTitle").textContent =
     S.stage === PH.file ? "卷宗" : S.stage === PH.meet ? "你手上的材料" : "在卷证据";
   if(S.stage < 0){ /* 事务所：左右栏都不用渲染 */ }
@@ -216,3 +217,16 @@ function nudgeMid(){
 }
 document.querySelectorAll("#tabbar button").forEach(b=>b.onclick=()=>setPane(b.dataset.pane));
 setPane("mid");
+
+/* 起诉书那一块。开局就该知道自己在辩什么。 */
+function briefHTML(){
+  const m = PACK.meta || {}, c = CASE;
+  const fee = m.fee ? `<span>律师费 ${(m.fee/10000).toFixed(1)} 万</span>` : "";
+  const ask = c.penaltyAsk ? `<span>${esc(c.penaltyAsk)}</span>` : "";
+  return `<div class="briefCard">
+      <div class="bh">${esc(m.title || c.title || "")}</div>
+      <div class="bs">${esc(m.subtitle || c.charge || "")}</div>
+      <p class="bb">${esc(c.brief || "")}</p>
+      <div class="bf">${ask}${fee}</div>
+    </div>`;
+}

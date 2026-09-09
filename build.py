@@ -15,6 +15,7 @@ SRC  = os.path.join(ROOT, "src")
 JS   = os.path.join(SRC, "js")
 DATA = os.path.join(SRC, "data")
 ART  = os.path.join(ROOT, "art")
+ICON = os.path.join(ROOT, "icons")
 VERSION = "1.0.0-b0"
 
 
@@ -80,7 +81,9 @@ def embed_art(html):
     data, total = {}, 0
     for sub in sorted(os.listdir(ART)):
         d = os.path.join(ART, sub)
-        if not os.path.isdir(d):
+        # source/ 是原始出图，delivery/ 是交付留档，都不进包。
+        # 之前没排掉，单文件版一口气吃进 188 MB，等于没法用。
+        if not os.path.isdir(d) or sub in ("source", "delivery"):
             continue
         for f in sorted(os.listdir(d)):
             p = os.path.join(d, f)
@@ -103,6 +106,43 @@ def embed_art(html):
     return html, len(data)
 
 
+
+def inline_icons(html):
+    """单文件版没有同级目录，图标和 manifest 得内嵌成 data: URI。
+    iOS 的 apple-touch-icon 认 data: URI，安卓的 manifest 也认。"""
+    if not os.path.isdir(ICON):
+        return html
+    def uri(name):
+        p = os.path.join(ICON, name)
+        if not os.path.exists(p):
+            return None
+        with open(p, "rb") as f:
+            return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+    man = os.path.join(ROOT, "manifest.webmanifest")
+    if os.path.exists(man):
+        m = json.loads(read(man))
+        m["start_url"] = "./"
+        m["scope"] = "./"
+        icons = []
+        for it in m.get("icons", []):
+            u = uri(os.path.basename(it["src"]))
+            if u:
+                it = dict(it, src=u)
+                icons.append(it)
+        m["icons"] = icons
+        blob = base64.b64encode(json.dumps(m, ensure_ascii=False).encode()).decode()
+        html = html.replace('href="manifest.webmanifest"',
+                            'href="data:application/manifest+json;base64,%s"' % blob)
+    for name, pat in (("icon-180.png",   'href="icons/icon-180.png"'),
+                      ("icon-192.png",   'href="icons/icon-192.png"'),
+                      ("favicon-64.png", 'href="icons/favicon-64.png"')):
+        u = uri(name)
+        if u:
+            html = html.replace(pat, 'href="%s"' % u)
+    print("  图标已内嵌")
+    return html
+
+
 def build(embed=False):
     tpl = read(os.path.join(SRC, "index.template.html"))
     css = read(os.path.join(SRC, "style.css")).rstrip("\n")
@@ -122,6 +162,7 @@ def build(embed=False):
 
     if embed:
         html, _ = embed_art(html)
+        html = inline_icons(html)
     have = scan_art()
     html = html.replace("<!--INJECT:ARTDATA-->",
         "const ART_DATA = {};   /* 走 art/ 目录 */\nconst ART_HAVE = %s;"

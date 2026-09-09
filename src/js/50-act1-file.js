@@ -57,6 +57,9 @@ function fileListHTML(){
 function bindFileList(){
   document.querySelectorAll("#evList .pickable").forEach(d=>d.onclick=()=>{
     curEv = d.dataset.ev; paint(); renderEvDoc(curEv); fileActions();
+    /* 窄屏：挑完就切到材料那一格。全文和粗看/细读的按钮都在那边，
+       留在卷宗格里的话，点了一份材料什么反应都看不到。 */
+    if(typeof setPane === "function") setPane("mid");
   });
 }
 

@@ -68,4 +68,6 @@ $("#btnLaw").onclick=()=>{ const d=$("#lawDrawer"); (d && !d.hidden) ? d.hidden=
 $("#btnFile").onclick=()=>document.body.classList.toggle("showfile");
 if(window.innerWidth<=900) $("#btnFile").style.display="flex";
 paint();
-openCfg(true);
+/* 第一次来先看说明，看过就直接进设置/续档 */
+try{ localStorage.getItem(SEEN_KEY) ? openCfg(true) : welcome(); }
+catch(e){ welcome(); }

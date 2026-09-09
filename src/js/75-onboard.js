@@ -42,3 +42,33 @@ function openCfg(first){
     if(first) start();
   };
 }
+
+/* ============================================================
+   开场：先说这是什么，再谈接口
+   陌生人点开链接第一眼不该是 API Key 输入框。
+   ============================================================ */
+const SEEN_KEY = "xinzheng_seen";
+function welcome(){
+  const mask = document.createElement("div"); mask.className = "mask";
+  mask.innerHTML = `<div class="modal welcome">
+    <div class="wtitle">心证</div>
+    <p class="wsub">一个中文庭审模拟。你是辩护人，案子是真的。</p>
+    <div class="wsteps">
+      <div><b>一</b><span>看卷宗</span><i>一晚上的精力有限。读得细，庭上才有底。</i></div>
+      <div><b>二</b><span>见当事人</span><i>他不会主动说实话，还会撒一句谎。戳穿它要靠你读过的那份材料。</i></div>
+      <div><b>三</b><span>上庭辩护</span><i>想说什么说什么。法官有耐心，说空话会被打断。</i></div>
+    </div>
+    <p class="wnote">结果不是输赢，是<b>心证</b>——法官对每个争议焦点的内心倾向。
+      打完会把每一分的来路摊给你看，包括你没说出口的那些话。</p>
+    <div class="row">
+      <button class="primary" id="wgo">开始（离线试玩）</button>
+      <button class="ghost" id="wcfg">我要接一个模型</button>
+    </div>
+    <p class="wtiny">离线也能从接案打到宣判，只是对方说的是预写台词。接了模型，庭上每一句都是现算的。</p>
+  </div>`;
+  document.body.appendChild(mask);
+  const done = cfg => { try{ localStorage.setItem(SEEN_KEY, "1"); }catch(e){}
+                        mask.remove(); cfg ? openCfg(true) : (saveCfg(), start()); };
+  mask.querySelector("#wgo").onclick  = ()=>{ S.cfg.offline = true; done(false); };
+  mask.querySelector("#wcfg").onclick = ()=>done(true);
+}

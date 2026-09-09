@@ -486,3 +486,27 @@ body.phase-office #aside{display:none}
   .tracks .tk i{display:none}
   .caseCard{padding:13px 14px}
 }
+
+/* ===== 开场说明屏 ===== */
+.modal.welcome{max-width:560px}
+.wtitle{font-family:var(--serif);font-size:34px;letter-spacing:.18em;color:var(--brass);
+  line-height:1.1;margin:2px 0 8px}
+.wsub{font-size:14px;color:var(--paper);margin:0 0 20px}
+.wsteps{display:flex;flex-direction:column;gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-bottom:18px}
+.wsteps>div{display:grid;grid-template-columns:34px 92px 1fr;align-items:baseline;gap:10px;
+  background:var(--panel2);padding:12px 14px}
+.wsteps b{font-family:var(--serif);font-size:15px;color:var(--brass);font-weight:400}
+.wsteps span{font-size:14px;color:var(--paper);white-space:nowrap}
+.wsteps i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.7}
+.wnote{font-size:13px;color:var(--text);line-height:1.85;margin:0 0 20px}
+.wnote b{color:var(--brass);font-weight:600}
+.wtiny{font-size:11.5px;color:var(--muted);line-height:1.7;margin:12px 0 0}
+@media(max-width:900px){
+  .wtitle{font-size:29px}
+  .wsteps>div{grid-template-columns:26px 1fr;gap:6px 10px;padding:11px 12px}
+  .wsteps i{grid-column:2}
+  .wsteps b{grid-row:span 2}
+  .modal.welcome .row{flex-wrap:wrap;gap:8px}
+  .modal.welcome .row button{flex:1 1 100%}
+}

@@ -1,4 +1,4 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:25 · 7 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T04:38 · 7 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -493,6 +493,30 @@ body.phase-office #aside{display:none}
   .tracks .tk span{font-size:11px;margin:2px 0 0;letter-spacing:.04em}
   .tracks .tk i{display:none}
   .caseCard{padding:13px 14px}
+}
+
+/* ===== 开场说明屏 ===== */
+.modal.welcome{max-width:560px}
+.wtitle{font-family:var(--serif);font-size:34px;letter-spacing:.18em;color:var(--brass);
+  line-height:1.1;margin:2px 0 8px}
+.wsub{font-size:14px;color:var(--paper);margin:0 0 20px}
+.wsteps{display:flex;flex-direction:column;gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-bottom:18px}
+.wsteps>div{display:grid;grid-template-columns:34px 92px 1fr;align-items:baseline;gap:10px;
+  background:var(--panel2);padding:12px 14px}
+.wsteps b{font-family:var(--serif);font-size:15px;color:var(--brass);font-weight:400}
+.wsteps span{font-size:14px;color:var(--paper);white-space:nowrap}
+.wsteps i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.7}
+.wnote{font-size:13px;color:var(--text);line-height:1.85;margin:0 0 20px}
+.wnote b{color:var(--brass);font-weight:600}
+.wtiny{font-size:11.5px;color:var(--muted);line-height:1.7;margin:12px 0 0}
+@media(max-width:900px){
+  .wtitle{font-size:29px}
+  .wsteps>div{grid-template-columns:26px 1fr;gap:6px 10px;padding:11px 12px}
+  .wsteps i{grid-column:2}
+  .wsteps b{grid-row:span 2}
+  .modal.welcome .row{flex-wrap:wrap;gap:8px}
+  .modal.welcome .row button{flex:1 1 100%}
 }
 </style>
 </head>
@@ -8519,6 +8543,36 @@ function openCfg(first){
     if(first) start();
   };
 }
+
+/* ============================================================
+   开场：先说这是什么，再谈接口
+   陌生人点开链接第一眼不该是 API Key 输入框。
+   ============================================================ */
+const SEEN_KEY = "xinzheng_seen";
+function welcome(){
+  const mask = document.createElement("div"); mask.className = "mask";
+  mask.innerHTML = `<div class="modal welcome">
+    <div class="wtitle">心证</div>
+    <p class="wsub">一个中文庭审模拟。你是辩护人，案子是真的。</p>
+    <div class="wsteps">
+      <div><b>一</b><span>看卷宗</span><i>一晚上的精力有限。读得细，庭上才有底。</i></div>
+      <div><b>二</b><span>见当事人</span><i>他不会主动说实话，还会撒一句谎。戳穿它要靠你读过的那份材料。</i></div>
+      <div><b>三</b><span>上庭辩护</span><i>想说什么说什么。法官有耐心，说空话会被打断。</i></div>
+    </div>
+    <p class="wnote">结果不是输赢，是<b>心证</b>——法官对每个争议焦点的内心倾向。
+      打完会把每一分的来路摊给你看，包括你没说出口的那些话。</p>
+    <div class="row">
+      <button class="primary" id="wgo">开始（离线试玩）</button>
+      <button class="ghost" id="wcfg">我要接一个模型</button>
+    </div>
+    <p class="wtiny">离线也能从接案打到宣判，只是对方说的是预写台词。接了模型，庭上每一句都是现算的。</p>
+  </div>`;
+  document.body.appendChild(mask);
+  const done = cfg => { try{ localStorage.setItem(SEEN_KEY, "1"); }catch(e){}
+                        mask.remove(); cfg ? openCfg(true) : (saveCfg(), start()); };
+  mask.querySelector("#wgo").onclick  = ()=>{ S.cfg.offline = true; done(false); };
+  mask.querySelector("#wcfg").onclick = ()=>done(true);
+}
 /* ─────── src/js/80-boot.js ─────── */
 /* 80-boot.js —— 启动 */
 /* ============================================================
@@ -8590,7 +8644,9 @@ $("#btnLaw").onclick=()=>{ const d=$("#lawDrawer"); (d && !d.hidden) ? d.hidden=
 $("#btnFile").onclick=()=>document.body.classList.toggle("showfile");
 if(window.innerWidth<=900) $("#btnFile").style.display="flex";
 paint();
-openCfg(true);
+/* 第一次来先看说明，看过就直接进设置/续档 */
+try{ localStorage.getItem(SEEN_KEY) ? openCfg(true) : welcome(); }
+catch(e){ welcome(); }
 </script>
 </body>
 </html>

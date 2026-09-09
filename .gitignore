@@ -1,0 +1,9 @@
+.DS_Store
+*.bak-*
+src/_*.tmp
+心证-单文件版.html
+src/data/laws-raw/
+__pycache__/
+art/source/
+art/delivery/*.zip
+art/delivery/contact-sheet.jpg

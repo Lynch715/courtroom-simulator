@@ -11,6 +11,33 @@
 3. **存档系统还没有**。目前只存设置（`xinzheng_cfg`），游戏进度不落盘，刷新即重来。
    随 B9 生涯外壳一起做，届时 `SAVE_VERSION` 从 1 起算。
 
+**B13（手机化 + 流程返修）**
+- **「去法院」按钮点了去看守所。** 阅卷结束后引擎调的是 `startMeet()`，
+  三个出口按钮却全写着「去法院」，八个案子的 `investigation.outro` 也全是
+  「天亮了。该去法院了。」——玩家按流程走一遍，第一个岔路口就被骗了。
+  改成 `nextStopLabel()` 按 `CASE.meeting.place` 现算（看守所 / 事务所 / 会见室），
+  八份 outro 逐个改写成真正的下一站。
+- **「去法院」原本是个 `setTimeout`。** 会见定完策略 900 毫秒后自己跳进法庭，
+  玩家没有一个「我现在要开庭了」的动作。加 `goCourtGate()`：结算这一趟拿到几条
+  他亲口说的事、庭上有几个论点、做什么辩护，然后一个大按钮「去法院」。
+- **卷宗页没有案情介绍。** `case.brief` 一直存在，但只喂给模型，玩家看不到。
+  加 `briefHTML()` / `#briefSect`，起诉书那一块放在左栏最上面。
+- **离线会见的 low / press 话池全是两到七个字。** 「嗯。」「……」「我说了。」——
+  戒备不等于没词。八个案子逐个重写，每池留一两句短的当节奏，其余给身上的东西、
+  屋里的东西、别人怎么说他。长度从 2~14 字提到 2~38 字。
+- **单文件版会把 `art/source` 和 `art/delivery` 一起吃进去。** `scan_art()` 排了这两个目录，
+  `embed_art()` 没排，于是 `--embed` 出来一个 257 MB 的 html。补上同样的过滤，现在 12 MB。
+- **宽屏事务所页左对齐**，1440 下右半边空一大块，像没加载完。`.office` 加 `margin:0 auto`。
+
+**B13 新增（不是修 bug）**
+- 手机端禁缩放：viewport 加 `user-scalable=no`，另外自己拦 `gesturestart` 和双击
+  （iOS 10 起 Safari 不认 viewport 里那句），CSS 上 `touch-action:manipulation`，
+  窄屏输入框强制 16px——不到 16px 的话 iOS 对焦时会自动推近，而缩放已经禁了，推近就退不回来。
+- 桌面图标 + PWA：`icons/`（180/192/512/maskable-512/favicon-64）、`manifest.webmanifest`、
+  `display:standalone`。主题色跟着亮暗主题走（`applyTheme()` 里重写 `<meta name=theme-color>`），
+  安全区只垫上、左、右——底下那条 `#tabbar` 自己已经垫过了，垫两回会空出一块。
+  单文件版由 `inline_icons()` 把图标和 manifest 转成 data: URI 内嵌。
+
 **B11 后半（第六案带出来的）**
 - **离线会见把信任门槛按「说这句话之前」的信任算，实际加成却是这句话带来的。**
   `applyMeet` 是先加信任、再判秘密；`offlineMeet` 却拿旧值过滤 `reveals`，

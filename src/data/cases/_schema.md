@@ -219,6 +219,9 @@ case {
     promiseMatch / promiseLine / promiseNote    答应办不到的事
     tone { warm|neutral|pressing|hostile: {match, trust} }
     pool { low, mid, high, press, hostile, off, locked }   离线应答池，每类四条以上
+        ※ 长度有下限。每池至多两条在十字以内当节奏，其余不短于二十字。
+          戒备的人不是没词，是绕开正题说别的：身上的东西、屋里的东西、
+          别人怎么说他、他这两天在想谁。写「嗯。」「我说了。」就等于没写这一条。
   }
 }
 ```

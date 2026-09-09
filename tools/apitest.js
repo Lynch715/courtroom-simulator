@@ -17,6 +17,10 @@ const fake = http.createServer((q,r)=>{
         if(req.response_format) return send(400,{error:{message:"response_format is not supported by this model"}});
         return send(200,{model:'fake-old',choices:[{message:{content:'好的，{"ok":1}'}}]});
       case 'chatty': return send(200,{model:'fake-chatty',choices:[{message:{content:'当然可以！这是您要的结果。'}}]});
+      case 'cut':    return send(200,{model:'fake-cut',choices:[{finish_reason:'length',message:{content:'{"ok"'}}]});
+      case 'empty':  return send(200,{model:'fake-empty',choices:[{finish_reason:'stop',message:{content:'',reasoning_content:'想了半天'}}]});
+      case 'flaky':  { global.__n=(global.__n||0)+1;
+                       return send(200,{model:'fake-flaky',choices:[{message:{content: global.__n===1 ? '好的：{"ok":1}' : '{"ok":1}'}}]}); }
       case 'k401':  return send(401,{error:{message:"Authentication Fails, Your api key is invalid"}});
       case 'k402':  return send(402,{error:{message:"Insufficient Balance"}});
       case 'k429':  return send(429,{error:{message:"Rate limit reached"}});
@@ -34,6 +38,9 @@ const srv=http.createServer((q,r)=>{const f=path.join(dir,q.url==='/'?'x.html':d
 
 const CASES = [
   ['通了',           'http://localhost:8199/ok',       'fake-v4-flash', 'sk-x'],
+  ['回答被截断',      'http://localhost:8199/cut',      'fake-cut',      'sk-x'],
+  ['回来是空的',      'http://localhost:8199/empty',    'fake-empty',    'sk-x'],
+  ['第一次歪第二次好','http://localhost:8199/flaky',    'fake-flaky',    'sk-x'],
   ['不支持 JSON 模式','http://localhost:8199/nojson',  'fake-old',      'sk-x'],
   ['不肯只回 JSON',   'http://localhost:8199/chatty',  'fake-chatty',   'sk-x'],
   ['密钥不对',        'http://localhost:8199/k401',    'm',             'sk-bad'],

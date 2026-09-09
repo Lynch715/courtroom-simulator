@@ -161,7 +161,9 @@ async function testLLM(base, model, key, onStep){
     const timer = setTimeout(()=>ctl.abort(), 20000);
     const t0 = Date.now();
     const body = {
-      model, temperature: 0, max_tokens: 40,
+      /* 40 太小了。模型稍微多说两个字就被截断，截断的 JSON 解析不了，
+         于是一个好端端的配置被报成「不支持 JSON」。给足。 */
+      model, temperature: 0, max_tokens: 300,
       messages: [
         {role:"system", content:"你是一个连通性自检端点。只输出 JSON。"},
         {role:"user",   content:'返回 {"ok":1}，不要任何其他字符。'}
@@ -225,15 +227,41 @@ async function testLLM(base, model, key, onStep){
   if(!r.ok)
     return {ok:false, title:"没通过（" + r.status + "）", detail:errMsg, ms:r.ms};
 
-  /* 200 了，看看内容 */
-  const content = (r.j && r.j.choices && r.j.choices[0] && r.j.choices[0].message && r.j.choices[0].message.content) || "";
-  const parsed = parseJSON(content);
-  const served = (r.j && r.j.model) || model;
-  if(!parsed)
-    return {ok:false, title:"通了，但这个模型没按 JSON 回",
-      detail:"接口和密钥都对，" + served + " 返回的是：" + JSON.stringify(content).slice(0,90) + "\n"
-           + "游戏需要它只输出 JSON。换个模型更稳。", ms:r.ms};
+  /* 200 了，看看内容。
+     这里要跟游戏本身的行为一致：callLLM 解析失败会重试一次。
+     所以测试也重试一次再下结论——不然同一个配置会一会儿说通、一会儿说不按 JSON 回。 */
+  const pick = x => {
+    const c = (x.j && x.j.choices && x.j.choices[0]) || {};
+    return {content: (c.message && c.message.content) || "",
+            reason: c.finish_reason || "",
+            served: (x.j && x.j.model) || model};
+  };
+  let a = pick(r), parsed = parseJSON(a.content), tries = 1, ms = r.ms;
+
+  if(!parsed){
+    say("回的不是 JSON，再试一次…");
+    const r2 = await shot(true);
+    ms += r2.ms || 0; tries = 2;
+    if(!r2.net && r2.ok){ const a2 = pick(r2); if(parseJSON(a2.content)){ parsed = parseJSON(a2.content); a = a2; } else a = a2; }
+  }
+
+  if(!parsed){
+    if(a.reason === "length")
+      return {ok:false, title:"回答被截断了",
+        detail:"接口和密钥都对，但 " + a.served + " 的回答没说完就断了。\n"
+             + "多半是这个模型在正文之前先输出了一段思考。游戏里给了 1400 token，通常够；\n"
+             + "要是庭上还这样，换 " + (model.indexOf("pro")>=0 ? "flash" : "pro") + " 那个试试。", ms};
+    if(!a.content)
+      return {ok:false, title:"通了，但回来是空的",
+        detail:"接口和密钥都对，" + a.served + " 没返回正文。\n"
+             + "有些带思考的模型会把内容放在 reasoning_content 里，游戏读不到。换个模型。", ms};
+    return {ok:false, title:"两次都没按 JSON 回",
+      detail:"接口和密钥都对。" + a.served + " 返回的是：" + JSON.stringify(a.content).slice(0,90) + "\n"
+           + "游戏需要它只输出 JSON。换个模型更稳。", ms};
+  }
 
   return {ok:true, title:"通了",
-    detail:"模型 " + served + "，往返 " + r.ms + " 毫秒，JSON 模式正常。庭上每一句都会是现算的。", ms:r.ms};
+    detail:"模型 " + a.served + "，往返 " + ms + " 毫秒，JSON 模式正常。"
+         + (tries > 1 ? "（第一次没按格式回，重试一次成了——游戏里也是这么兜的，不影响玩。）" : "")
+         + "庭上每一句都会是现算的。", ms};
 }

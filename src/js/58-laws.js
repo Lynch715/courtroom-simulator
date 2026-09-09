@@ -51,12 +51,26 @@ function lawDrawer(){
   d.innerHTML = `<div class="lawHead">
       <b>法条速查</b>
       <span class="lawSrc">条文来自国家法律法规数据库</span>
-      <button class="iconbtn" id="lawClose">关闭</button>
+      <button class="iconbtn" id="lawClose" aria-label="关闭">×</button>
     </div>
     <input id="lawQ" placeholder="条号或关键词：264 / 第二百六十四条 / 正当防卫">
-    <div id="lawResults"></div>`;
+    <div id="lawResults"></div>
+    <button class="lawFoot" id="lawClose2">收起法条</button>`;
   document.body.appendChild(d);
-  $("#lawClose").onclick = ()=>{ d.hidden = true; };
+  const shut = ()=>{ d.hidden = true; };
+  $("#lawClose").onclick = shut;
+  /* 手机上抽屉是满屏的，没有「外面」可点，也没有 Esc 键。
+     底下再放一条大的，那个位置不会被状态栏或者别的东西压住。 */
+  $("#lawClose2").onclick = shut;
+  /* 关这个抽屉不该只有一个办法。按钮之外，Esc 和点抽屉外面都能关——
+     万一那个按钮又被什么东西压住，玩家不至于被困在里面。 */
+  document.addEventListener("keydown", e=>{ if(e.key === "Escape" && !d.hidden) shut(); });
+  document.addEventListener("pointerdown", e=>{
+    if(d.hidden) return;
+    if(d.contains(e.target)) return;
+    if(e.target.closest && e.target.closest("#btnLaw, .lawRef")) return;   // 那两个自己会切换
+    shut();
+  }, true);
   $("#lawQ").oninput = ()=>renderLaw($("#lawQ").value);
   return d;
 }

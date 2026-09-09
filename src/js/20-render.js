@@ -39,7 +39,7 @@ function paint(){
     </div>`;
   }).join("");
   // 证据：阅卷阶段是可点的卷宗清单，庭上是在卷证据
-  if($("#briefBox")) $("#briefBox").innerHTML = briefHTML();
+  if($("#briefBox")){ $("#briefBox").innerHTML = briefHTML(); bindIndict(); }
   if($("#evTitle")) $("#evTitle").textContent =
     S.stage === PH.file ? "卷宗" : S.stage === PH.meet ? "你手上的材料" : "在卷证据";
   if(S.stage < 0){ /* 事务所：左右栏都不用渲染 */ }
@@ -218,15 +218,50 @@ function nudgeMid(){
 document.querySelectorAll("#tabbar button").forEach(b=>b.onclick=()=>setPane(b.dataset.pane));
 setPane("mid");
 
-/* 起诉书那一块。开局就该知道自己在辩什么。 */
+/* 起诉书那一块。开局就该知道自己在辩什么、辩的是谁。
+ * 正文照真实起诉书的格式排：谁、干了什么、凭什么认定、按哪条起诉、要判多少。
+ * 长是应该的——这是案子的全部底牌，读不完就上庭是玩家自己的选择。 */
 function briefHTML(){
-  const m = PACK.meta || {}, c = CASE;
-  const fee = m.fee ? `<span>律师费 ${(m.fee/10000).toFixed(1)} 万</span>` : "";
-  const ask = c.penaltyAsk ? `<span>${esc(c.penaltyAsk)}</span>` : "";
-  return `<div class="briefCard">
+  const m = PACK.meta || {}, c = CASE, ind = c.indictment;
+  if(!ind){
+    /* 老案件包没写 indictment，退回一句话版本，不让它崩 */
+    return `<div class="briefCard">
       <div class="bh">${esc(m.title || c.title || "")}</div>
       <div class="bs">${esc(m.subtitle || c.charge || "")}</div>
       <p class="bb">${esc(c.brief || "")}</p>
-      <div class="bf">${ask}${fee}</div>
     </div>`;
+  }
+  const para = t => String(t || "").split("\n")
+    .filter(x=>x.trim()).map(x=>`<p>${esc(x.trim())}</p>`).join("");
+  const fee = m.fee ? `律师费 ${(m.fee/10000).toFixed(1)} 万` : "";
+  const title = ind.docTitle || "起诉书";
+  return `<div class="briefCard" id="indict">
+      <div class="bh">${esc(m.title || c.title || "")}</div>
+      <div class="bs">${esc(m.subtitle || c.charge || "")}</div>
+      <div class="indHead">
+        <div class="indOrg">${esc(ind.org || "")}</div>
+        <div class="indTitle">${esc(title)}</div>
+        <div class="indNo">${esc(ind.no || "")}</div>
+      </div>
+      <div class="indBody" id="indBody">
+        <div class="indSec"><i>被告人</i>${para(ind.defendant)}</div>
+        <div class="indSec"><i>指控事实</i>${para(ind.facts)}</div>
+        <div class="indSec"><i>证据</i>${para(ind.proof)}</div>
+        <div class="indSec"><i>本院认为</i>${para(ind.charge)}</div>
+        ${ind.ask ? `<div class="indSec ask"><i>量刑建议</i>${para(ind.ask)}</div>` : ""}
+      </div>
+      <div class="indFold"><button class="ghost sm" id="indMore">读全文</button>
+        ${fee ? `<span class="hint">${esc(fee)}</span>` : ""}</div>
+    </div>`;
+}
+
+/* 起诉书默认折起来，点开读全文。左栏放不下整篇。 */
+function bindIndict(){
+  const b = document.getElementById("indMore");
+  if(!b) return;
+  b.onclick = ()=>{
+    const card = document.getElementById("indict");
+    const on = card.classList.toggle("open");
+    b.textContent = on ? "收起" : "读全文";
+  };
 }

@@ -2,7 +2,54 @@
 /* ============================================================
    设置
    ============================================================ */
-$("#btnCfg").onclick=openCfg;
+/* 不能写成 onclick=openCfg——那样点击事件对象会当成 first 参数传进去，
+   于是从顶栏进设置、按「开庭」，会走 first 分支调 start()，把正在打的这一局踢回事务所。 */
+$("#btnCfg").onclick = ()=>openCfg(false);
+/* ══════════════ 存档那一栏 ══════════════
+ * 原来没有任何入口：想重开一局只能清浏览器数据。
+ * 这里给两件事——当前这一局怎么办，生涯记录怎么办。两件事分开，别混。 */
+function saveBoxHTML(){
+  const d = (typeof savedGame === "function") ? savedGame() : null;
+  let cur;
+  if(d){
+    const pack = CASES.find(c=>c.id === d.caseId);
+    const nm = pack ? pack.meta.title : d.caseId;
+    const ph = (PHASES[d.s.stage] || {}).name || "";
+    const t = new Date(d.at);
+    const when = `${t.getMonth()+1}月${t.getDate()}日 ${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`;
+    cur = `<div class="svRow"><div><b>《${esc(nm)}》</b><span>${esc(ph)}　·　存于 ${when}</span></div>
+      <button class="ghost sm" id="svDrop">重开这一局</button></div>`;
+  }else{
+    cur = `<div class="svRow"><div><b>手上没有没打完的案子</b><span>开一局，进度自动存，随时关掉都不丢</span></div></div>`;
+  }
+  const done = (META.done || []).length;
+  const cash = (META.cash != null) ? (META.cash/10000).toFixed(1) + " 万" : "";
+  const meta = `<div class="svRow"><div><b>生涯记录</b><span>打完 ${done} 个案子　·　声誉 ${META.rep||0}　·　良心 ${META.conscience||0}　·　${cash}</span></div>
+      <button class="ghost sm" id="svWipe">全部清空</button></div>`;
+  return `<div class="fLab">存档</div><div class="svBox">${cur}${meta}</div>`;
+}
+
+/* 存档按钮的事，接在设置弹层上 */
+function bindSaveBox(mask, close){
+  const drop = mask.querySelector("#svDrop");
+  if(drop) drop.onclick = ()=>{
+    drop.outerHTML = `<span class="svAsk">当前进度会没掉。<button class="ghost sm" id="svYes">确定重开</button></span>`;
+    mask.querySelector("#svYes").onclick = ()=>{
+      clearSave(); close(); S.playing = false; officeScreen("这一局不算了。重新挑一个。");
+    };
+  };
+  const wipe = mask.querySelector("#svWipe");
+  if(wipe) wipe.onclick = ()=>{
+    wipe.outerHTML = `<span class="svAsk">声誉、良心、钱和打过的案子全部归零，回不来。<button class="ghost sm" id="svYes2">确定清空</button></span>`;
+    mask.querySelector("#svYes2").onclick = ()=>{
+      clearSave();
+      try{ localStorage.removeItem(META_KEY); }catch(e){}
+      META = metaLoad();
+      close(); S.playing = false; officeScreen("从头开始。桌上又是空的。");
+    };
+  };
+}
+
 function openCfg(first){
   const mask=document.createElement("div"); mask.className="mask";
   mask.innerHTML=`<div class="modal">
@@ -30,11 +77,13 @@ function openCfg(first){
     </div>
     <label class="f">API Key<input id="key" type="password" value="${S.cfg.key}" placeholder="sk-..."></label>
     <div id="testOut" class="testOut" hidden></div>
+    ${first ? "" : saveBoxHTML()}
     <div class="row"><button class="primary" id="ok">开庭</button>
     <button class="ghost" id="test">测试连接</button>
     <span class="hint">任何 OpenAI 兼容接口都行</span></div>
   </div>`;
   document.body.appendChild(mask);
+  if(!first) bindSaveBox(mask, ()=>mask.remove());
   /* 主题即点即换，不用等「开庭」 */
   mask.querySelectorAll("#thm .chip").forEach(b=>b.onclick=()=>{
     mask.querySelectorAll("#thm .chip").forEach(x=>x.classList.remove("sel"));

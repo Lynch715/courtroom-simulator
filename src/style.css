@@ -558,3 +558,14 @@ body.phase-office #aside{display:none}
   #action .row .hint{font-size:11.5px}
   #docview{padding-bottom:8px}
 }
+
+/* 设置页的连接自检结果 */
+.testOut{border:1px solid var(--line2);background:var(--panel2);padding:10px 12px;margin-bottom:14px;
+  font-size:12.5px;line-height:1.7}
+.testOut b{display:block;font-size:13.5px;color:var(--paper);margin-bottom:3px;font-weight:600}
+.testOut span{display:block;color:var(--muted);white-space:pre-wrap}
+.testOut.wait{color:var(--muted)}
+.testOut.good{border-color:var(--ok)}
+.testOut.good b{color:var(--ok)}
+.testOut.bad{border-color:var(--pros)}
+.testOut.bad b{color:var(--pros)}

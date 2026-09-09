@@ -29,7 +29,9 @@ function openCfg(first){
       <button class="chip" data-v="deepseek-v4-pro">V4 Pro</button>
     </div>
     <label class="f">API Key<input id="key" type="password" value="${S.cfg.key}" placeholder="sk-..."></label>
+    <div id="testOut" class="testOut" hidden></div>
     <div class="row"><button class="primary" id="ok">开庭</button>
+    <button class="ghost" id="test">测试连接</button>
     <span class="hint">任何 OpenAI 兼容接口都行</span></div>
   </div>`;
   document.body.appendChild(mask);
@@ -43,6 +45,24 @@ function openCfg(first){
     mask.querySelectorAll("#mdl .chip").forEach(x=>x.classList.remove("sel"));
     b.classList.add("sel");
   });
+  /* 测试连接：用输入框里当下的值试，不用先保存 */
+  const tBtn = mask.querySelector("#test"), tOut = mask.querySelector("#testOut");
+  tBtn.onclick = async ()=>{
+    if(tBtn.disabled) return;
+    tBtn.disabled = true; const label = tBtn.textContent; tBtn.textContent = "测试中…";
+    tOut.hidden = false; tOut.className = "testOut wait"; tOut.textContent = "正在连接…";
+    const r = await testLLM(
+      mask.querySelector("#base").value.trim(),
+      mask.querySelector("#model").value.trim(),
+      mask.querySelector("#key").value.trim(),
+      s => { tOut.textContent = s; });
+    tOut.className = "testOut " + (r.ok ? "good" : "bad");
+    tOut.innerHTML = `<b>${esc(r.title)}</b>${r.detail ? `<span>${esc(r.detail)}</span>` : ""}`;
+    /* 测通了就把离线开关关掉——他要的显然是接模型 */
+    if(r.ok){ const off = mask.querySelector("#off"); if(off) off.checked = false; }
+    tBtn.disabled = false; tBtn.textContent = label;
+  };
+
   mask.querySelector("#ok").onclick=()=>{
     S.cfg.offline=mask.querySelector("#off").checked;
     S.cfg.base=mask.querySelector("#base").value.trim()||"https://api.deepseek.com";

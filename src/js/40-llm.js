@@ -138,3 +138,102 @@ async function verdictDoc(v, t){
     {temp: 0.5});
   return (res && res.text) || offlineVerdict(v, t);
 }
+
+/* ══════════════ 连通性自检 ══════════════
+ * 设置页那个「测试连接」按钮。一次往返，把游戏真正依赖的三件事全试一遍：
+ *   1. 地址、密钥、模型名对不对
+ *   2. 浏览器能不能直接调这个接口（跨域）
+ *   3. 这个模型认不认 response_format:json_object——游戏全靠它，
+ *      不认的话在线模式会一路悄悄走离线兜底，玩家还以为接上了
+ * 返回 {ok, title, detail, ms}，不抛异常。
+ */
+async function testLLM(base, model, key, onStep){
+  const url = String(base||"").replace(/\/+$/,"") + "/chat/completions";
+  const say = s => { if(typeof onStep === "function") onStep(s); };
+
+  if(!/^https?:\/\//i.test(base||""))
+    return {ok:false, title:"接口地址不像个网址", detail:"要以 http:// 或 https:// 开头，例如 https://api.deepseek.com"};
+  if(!key) return {ok:false, title:"没填 API Key", detail:"离线试玩不需要密钥；要接模型就得填一个。"};
+  if(!model) return {ok:false, title:"没填模型名", detail:"比如 deepseek-v4-flash。"};
+
+  async function shot(withJson){
+    const ctl = new AbortController();
+    const timer = setTimeout(()=>ctl.abort(), 20000);
+    const t0 = Date.now();
+    const body = {
+      model, temperature: 0, max_tokens: 40,
+      messages: [
+        {role:"system", content:"你是一个连通性自检端点。只输出 JSON。"},
+        {role:"user",   content:'返回 {"ok":1}，不要任何其他字符。'}
+      ]
+    };
+    if(withJson) body.response_format = {type:"json_object"};
+    try{
+      const r = await fetch(url, {method:"POST", signal:ctl.signal,
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+        body: JSON.stringify(body)});
+      clearTimeout(timer);
+      const txt = await r.text();
+      let j = null; try{ j = JSON.parse(txt); }catch(e){}
+      return {status:r.status, ok:r.ok, j, txt, ms:Date.now()-t0};
+    }catch(e){
+      clearTimeout(timer);
+      return {net:true, name:e.name, msg:e.message, ms:Date.now()-t0};
+    }
+  }
+
+  say("正在连接…");
+  let r = await shot(true);
+
+  /* 连都没连上 */
+  if(r.net){
+    if(r.name === "AbortError")
+      return {ok:false, title:"超时（20 秒没回）", detail:"接口地址可能写错了，或者这个网络到不了对方服务器。", ms:r.ms};
+    return {ok:false, title:"连不上",
+      detail:"浏览器直接被挡住了，多半是这三种之一：地址写错、当前网络到不了对方、或者对方不允许网页直接调用（跨域）。\n"
+           + "浏览器控制台里会有一条更具体的报错。原始信息：" + (r.msg||"—"), ms:r.ms};
+  }
+
+  const errMsg = (r.j && r.j.error && (r.j.error.message || r.j.error.code)) || (r.txt||"").slice(0,160);
+
+  if(r.status === 401 || r.status === 403)
+    return {ok:false, title:"密钥不对（" + r.status + "）", detail:"地址通了，对方不认这个 Key。检查有没有多复制空格，或者这个 Key 有没有被停用。\n" + errMsg, ms:r.ms};
+  if(r.status === 402 || /insufficient|balance|quota|欠费|余额/i.test(errMsg))
+    return {ok:false, title:"余额不足", detail:"密钥是对的，但账户没钱了或者额度用完了。\n" + errMsg, ms:r.ms};
+  if(r.status === 429)
+    return {ok:false, title:"被限流了（429）", detail:"接口和密钥都没问题，就是这会儿请求太密。等一下再试。\n" + errMsg, ms:r.ms};
+  if(r.status === 404)
+    return {ok:false, title:"找不到（404）", detail:"要么接口地址不对（末尾不要带 /v1/chat/completions，游戏会自己拼），要么这个模型名对方没有。\n" + errMsg, ms:r.ms};
+  if(r.status >= 500)
+    return {ok:false, title:"对方服务器出错（" + r.status + "）", detail:"不是你这边的问题，过一会儿再试。\n" + errMsg, ms:r.ms};
+
+  if(r.status === 400){
+    /* 400 分两种：模型名不对，还是这个模型不支持 JSON 模式 */
+    if(/response_format|json_object|json mode/i.test(errMsg)){
+      say("这个模型可能不支持 JSON 模式，再试一次…");
+      const r2 = await shot(false);
+      if(r2.ok)
+        return {ok:false, title:"接口通了，但这个模型不支持 JSON 模式",
+          detail:"游戏靠 response_format:json_object 拿结构化结果，这个模型不认。\n"
+               + "换一个支持 JSON 模式的模型（DeepSeek 的 v4-flash / v4-pro 都支持）。\n"
+               + "不换的话，在线模式会一路悄悄退回离线兜底。", ms:r.ms+r2.ms};
+    }
+    if(/model/i.test(errMsg))
+      return {ok:false, title:"模型名不对（400）", detail:"地址和密钥都通了，对方不认这个模型名。\n" + errMsg, ms:r.ms};
+    return {ok:false, title:"请求被拒（400）", detail:errMsg, ms:r.ms};
+  }
+  if(!r.ok)
+    return {ok:false, title:"没通过（" + r.status + "）", detail:errMsg, ms:r.ms};
+
+  /* 200 了，看看内容 */
+  const content = (r.j && r.j.choices && r.j.choices[0] && r.j.choices[0].message && r.j.choices[0].message.content) || "";
+  const parsed = parseJSON(content);
+  const served = (r.j && r.j.model) || model;
+  if(!parsed)
+    return {ok:false, title:"通了，但这个模型没按 JSON 回",
+      detail:"接口和密钥都对，" + served + " 返回的是：" + JSON.stringify(content).slice(0,90) + "\n"
+           + "游戏需要它只输出 JSON。换个模型更稳。", ms:r.ms};
+
+  return {ok:true, title:"通了",
+    detail:"模型 " + served + "，往返 " + r.ms + " 毫秒，JSON 模式正常。庭上每一句都会是现算的。", ms:r.ms};
+}

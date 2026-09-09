@@ -96,8 +96,8 @@ function officeScreen(note){
         ${fresh.length === 0 ? `<p class="sub">这一期的案子你都打过了。再打一次也行——同一个案子，换个打法，结果不一样。</p>`
           : (old.length ? `<p class="sub">打过的案子也能重接。换个策略，结果不一样。</p>` : "")}
       </div>`;
-  ui(`<div class="prompt">选一个案子。<b>接了就不能反悔。</b></div>
-      <div class="row"><span class="hint">案件库共 ${CASES.length} 个，还在加</span></div>`);
+  ui(`<div class="prompt">桌上这几份委托，<b>接了就是你的案子。</b></div>
+      <div class="row"><span class="hint">卷宗架上一共 ${CASES.length} 份，还在往里添</span></div>`);
   document.querySelectorAll(".caseCard").forEach(el=>el.onclick=()=>takeCase(el.dataset.id));
   paint();
 }

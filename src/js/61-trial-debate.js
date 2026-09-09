@@ -79,7 +79,7 @@ function offerObjection(arg, mode){
       <button class="chip solo sel" data-v="skip">不提异议</button>
     </div>
     <div class="row"><button class="primary" id="go">确定</button>
-    <span class="hint">这一轮的异议窗口只有一次</span></div>`);
+    <span class="hint">这句话过去了就过去了</span></div>`);
   bindChips("#obj .chip");
   $("#go").onclick = ()=>{
     const p = multi("#obj .chip")[0] || "skip";

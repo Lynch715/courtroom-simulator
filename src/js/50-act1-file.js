@@ -72,9 +72,9 @@ function fileActions(){
   if(!curEv){
     /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
     const where = window.matchMedia("(max-width:900px)").matches ? "「卷宗」那一格里" : "左边";
-    ui(`<div class="prompt">从${where}挑一份材料开始。<b>精力 ${S.energy}</b>，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。</div>
+    ui(`<div class="prompt">${where}那一沓，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。<b>今晚你有 ${S.energy} 点。</b></div>
       <div class="row"><button class="ghost" id="leave">直接去法院</button>
-      <span class="hint">你也可以什么都不看就去。没人拦着。</span></div>`);
+      <span class="hint">天亮之前，桌上这些看不完。</span></div>`);
     $("#leave").onclick = confirmLeave;
     return;
   }
@@ -91,7 +91,7 @@ function fileActions(){
       ${Object.entries(FILE_ACT).map(([f,cn])=>
         `<button class="chip ${marks.includes(f)?"sel":""}" data-f="${f}">${cn}存疑</button>`).join("")}
     </div>
-    <div class="prompt small">标记不花精力，标错也不罚。庭上质证时，标对的地方你会更有底气。</div>` : "";
+    <div class="prompt small">标记不花精力。标过的地方，庭上你张口就来；没标的，得现想。</div>` : "";
 
   /* 窄屏上这一块原来能占掉半屏，正文被压得只剩一段。
      备注框默认收起来，点「记一句」才展开。 */
@@ -99,7 +99,7 @@ function fileActions(){
     <div class="chips">${btns.join("") || `<span class="hint">这份看完了。</span>`}</div>
     ${markRow}
     ${lv === 2 ? `<div class="noteWrap" id="noteWrap" hidden>
-        <textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>
+        <textarea id="noteBox" placeholder="记一句，给自己看的"></textarea>
         <div class="row"><button class="ghost" id="aNote">记下</button>${voiceBtn("noteBox")}</div>
       </div>` : ""}
     <div class="row">
@@ -155,11 +155,11 @@ function confirmLeave(){
   const warn = unread.length
     ? `还有 ${unread.length} 份没细读：${unread.map(k=>CASE.ev[k].name).join("、")}。`
     : `三册都读完了。`;
-  ui(`<div class="prompt">${warn}<b>去了就回不来了。</b></div>
+  ui(`<div class="prompt">${warn}<b>出了这个门就是明天早上。</b></div>
     <div class="row">
       <button class="primary" id="yes">去法院</button>
       <button class="ghost" id="no">再看看</button>
-      <span class="hint">剩余精力 ${S.energy}</span>
+      <span class="hint">还剩 ${S.energy} 点精力</span>
     </div>`);
   $("#no").onclick = fileActions;
   $("#yes").onclick = endFile;

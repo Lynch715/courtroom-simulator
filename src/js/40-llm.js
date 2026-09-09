@@ -2,7 +2,7 @@
  * 施工规范 三：所有调用走 callLLM 一个入口，业务代码里禁止散写 fetch。
  * 表演层的返回值不得直接进状态，必须先过 30-engine.js 的 adjudicate()。
  */
-const LLM = { timeout: 25000, maxTokens: 700 };
+const LLM = { timeout: 30000, maxTokens: 1400 };   // 放开长度之后 700 不够用了
 
 async function callLLM(kind, user, {retries = 1, temp = 0.8} = {}){
   if(S.cfg.offline || !S.cfg.key) return null;

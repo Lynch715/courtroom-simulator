@@ -136,29 +136,38 @@ function trustHTML(){
   const col = S.trust>=70?"var(--ok)":S.trust>=40?"var(--def)":"var(--pros)";
   const lab = S.trust>=75?"他开始跟你说实话":S.trust>=55?"他愿意说"
             :S.trust>=35?"他还在掂量你":S.trust>=15?"他不太信你":"他不想跟你说话";
+  /* 这一格原来只有一条信任进度条，玩家点进来没什么可看的。
+     现在主体是「他说了什么」——用他自己的原话，不是第三人称的摘要。
+     信任压成顶上一行。 */
   const rows = [];
   S.known.forEach(id=>{
     const sec = m.secrets.find(x=>x.id===id);
-    if(sec) rows.push(`<div class="e">${esc(sec.note)}</div>`);
+    if(!sec) return;
+    const quote = String(sec.truth || "").split(/[。？！\n]/).filter(Boolean)[0];
+    rows.push(`<div class="e"><q>${esc(quote ? quote + "。" : sec.note)}</q>
+      <b>${esc(sec.note)}</b></div>`);
   });
   S.lieBusted.forEach(id=>{
     const l = m.lies.find(x=>x.id===id);
-    if(l) rows.push(`<div class="e busted">已戳穿：${esc(l.believedNote)}</div>`);
+    if(l) rows.push(`<div class="e busted"><q>${esc(l.onBust || "")}</q>
+      <b>他改口了：${esc(l.believedNote)}</b></div>`);
   });
   S.lieBelieved.forEach(id=>{
     const l = m.lies.find(x=>x.id===id);
-    if(l) rows.push(`<div class="e lie">他说：${esc(l.believedNote)}</div>`);
+    if(l) rows.push(`<div class="e lie"><q>${esc(String(l.claim||"").split(/[。\n]/)[0] + "。")}</q>
+      <b>他说的，你还没核过</b></div>`);
   });
   const port = CASE.cast.client && CASE.cast.client.art
     ? `<div class="meetPortrait">${artImg(CASE.cast.client.art, "portrait", CASE.cast.client.who)}</div>` : "";
-  return port + `<div class="trustBox">
-      <div class="t"><span>信任</span><i>${lab}</i></div>
+  const empty = m.hint ? esc(m.hint) : "他还什么都没说。";
+  return port + `<div class="trustBox tight">
+      <div class="t"><span>${esc(lab)}</span><i>还能问 ${S.turnsLeft} 轮</i></div>
       <div class="trustBar"><div class="trustFill" style="width:${S.trust}%;background:${col}"></div></div>
       <div class="turnDots">${dots}</div>
     </div>
     <div class="knownList">
-      <h2 style="font-size:12px;font-weight:600;color:var(--brass);margin:0 0 9px;letter-spacing:.14em">你知道的事</h2>
-      ${rows.join("") || `<div class="e">还没问出什么。</div>`}
+      <h2 style="font-size:12px;font-weight:600;color:var(--brass);margin:0 0 9px;letter-spacing:.14em">他说了什么</h2>
+      ${rows.join("") || `<div class="e blank">${empty}</div>`}
     </div>`;
 }
 
@@ -179,7 +188,7 @@ function castListHTML(){
  */
 const PANE_LABELS = {
   file:    {left:"卷宗", mid:"材料",   right:"批注"},
-  meet:    {left:"材料", mid:"会见",   right:"信任"},
+  meet:    {left:"材料", mid:"会见",   right:"他说的"},
   cross:   {left:"卷宗", mid:"笔录",   right:"心证"},
   debate:  {left:"卷宗", mid:"笔录",   right:"心证"},
   verdict: {left:"卷宗", mid:"笔录",   right:"心证"},

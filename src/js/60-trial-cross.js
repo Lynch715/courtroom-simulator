@@ -26,7 +26,7 @@ function crossDoc(item){
     <textarea id="say" placeholder="${"补充一句" + L("crossV") + "理由（可留空。写了会被" + L("presider") + "听进去，也会被记下来）"}"></textarea>
     <div class="row"><button class="primary" id="go">发表${L("crossN")}</button>
     ${voiceBtn("say")}
-    <span class="hint">乱${L("crossV")}会消耗${L("presider")}耐心</span></div>`);
+    <span class="hint">说不出依据的异议，${L("presider")}记着呢</span></div>`);
   bindChips("#tri .chip");
   $("#go").onclick = async()=>{
     const picks = multi("#tri .chip");

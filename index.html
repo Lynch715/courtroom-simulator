@@ -1,4 +1,4 @@
-<!-- 心证 v1.0.0-b0 · build 2026-09-09T08:31 · 8 cases · 22 js modules -->
+<!-- 心证 v1.0.0-b0 · build 2026-09-09T10:24 · 8 cases · 22 js modules -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -195,6 +195,7 @@ label.f input{
   .col.right .scale{border-bottom:1px solid var(--line);padding:18px 14px 10px}
   .col.right .scale svg{max-width:190px}
   .col.right .ledger{display:block}
+  body.phase-meet .col.right .ledger, body.phase-file .col.right .ledger{display:none}
 
   #record{padding:16px 16px 24px}
   #action{padding:12px 16px 16px}
@@ -382,8 +383,12 @@ body.phase-meet #aside{display:none}
   body[data-pane="mid"]   .col.mid  {display:flex;flex-direction:column}
 
   /* 心证那一屏是完整的：天平、耐心、流水都在，各自舒展 */
-  .col.right .scale{padding:20px 16px 12px;border-bottom:1px solid var(--line);
-    display:block;text-align:center}
+  .col.right .scale{padding:20px 16px 12px;border-bottom:1px solid var(--line);text-align:center}
+  /* 会见和阅卷阶段没有心证也没有法官耐心，这两块不该出现。
+     上面那条 .col.right .scale 原来带了 display:block，把外面的隐藏规则顶掉了，
+     结果会见时顶上挂着一个「-9 略偏控方」——那会儿还没开庭。 */
+  body.phase-meet .col.right .scale, body.phase-meet .col.right .pat,
+  body.phase-file .col.right .scale, body.phase-file .col.right .pat{display:none}
   .col.right .scale svg{max-width:200px;width:100%}
   .col.right .scale .val{font-size:32px;margin-top:4px}
   .col.right .pat{padding:14px 16px}
@@ -577,6 +582,17 @@ body.phase-office #aside{display:none}
 .testOut.good b{color:var(--ok)}
 .testOut.bad{border-color:var(--pros)}
 .testOut.bad b{color:var(--pros)}
+
+/* 会见那一格：主体是他说过的话 */
+.trustBox.tight{padding:12px 14px 12px}
+.trustBox.tight .t{margin-bottom:6px}
+.knownList .e q{display:block;quotes:none;font-family:var(--serif);font-size:13.5px;line-height:1.75;
+  color:var(--paper);margin-bottom:3px}
+.knownList .e b{display:block;font-weight:400;font-size:11.5px;color:var(--muted);line-height:1.6}
+.knownList .e{padding:9px 0}
+.knownList .e.blank{color:var(--muted);font-size:12.5px;line-height:1.8;border-bottom:none}
+.knownList .e.lie q{color:var(--pros)}
+.knownList .e.busted q{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -1280,12 +1296,18 @@ const CASES = [
           "我不知道该怎么说。",
           "……我认。",
           "你想知道哪一段。",
-          "那会儿我脑子是空的。"
+          "那会儿我脑子是空的。",
+          "那台机器是二十二号晚上开始不对的。我记得是因为那天我值夜班，交接本上还是我签的字。",
+          "第一次我以为是看错了。取一千，卡上扣一块。我退了卡，又插进去查了一次余额，数还是那个数。",
+          "后来就没停下来。我也说不清是从哪一下开始，我知道自己在干什么了。",
+          "我姐来看过我一次，隔着玻璃。她问我为什么不早点停手，我没答上来。"
         ],
         "high": [
           "我跟你说实话。",
           "这个我没跟别人讲过。",
-          "你要是早两个月来就好了。"
+          "你要是早两个月来就好了。",
+          "钱我没花多少。买了个手机，剩下的都在包里，抓我那天原封不动。这个我不知道算不算数。",
+          "我知道那不是我的钱。可我当时想的是，是机器给我的，不是我撬开拿的。这两件事在我脑子里不一样。"
         ],
         "press": [
           "我说了。",
@@ -2065,12 +2087,17 @@ const CASES = [
           "这个我说不好。",
           "我就是摆个摊。",
           "你说的这些我听不太懂。",
-          "那我该怎么办。"
+          "那我该怎么办。",
+          "那个摊子我摆了六年了。河边夜市，一到夏天人多得走不动。九支枪，两块钱打十发。",
+          "东西是我在批发市场买的，三十二一支，有单子的。同一批货那条街上好几家都在用。",
+          "我一个五十多的人，摆摊卖气球玩具，我图什么。孩子来打气球，打中了给个小熊。"
         ],
         "high": [
           "我跟你说实话。",
           "这话我没跟别人讲过。",
-          "你要是早两个月来就好了。"
+          "你要是早两个月来就好了。",
+          "那张纸条是我自己写的，贴在台子上——「小孩要大人带着玩」。前年贴的，听说邻市有摆摊的因为这个进去了。",
+          "我要是真知道那是枪，我贴张纸条有什么用。我把摊子收了不就完了。"
         ],
         "press": [
           "我说了。",
@@ -2792,12 +2819,17 @@ const CASES = [
           "我不知道从哪儿说起。",
           "这个我记不太清了。",
           "你想知道哪一段。",
-          "我没想过会这样。"
+          "我没想过会这样。",
+          "那天是同学聚会。前一个礼拜公司把我辞了，我没跟家里说，还每天照常出门。",
+          "他们劝酒的时候我没拦。我想着反正也没什么了。",
+          "撞完第一下我停了一会儿。后来的事我不敢想，一想就是那几辆车的样子。"
         ],
         "high": [
           "这话我没跟人说过。",
           "我跟你说实话。",
-          "你别告诉我爸妈。"
+          "你别告诉我爸妈。",
+          "我踩了刹车。真的踩了，车往前滑，滑了好长一段。后来我一慌，脚就不知道怎么又下去了。",
+          "房子是我爸妈住了二十年的。卖了一百一十二万，赔出去一百零六万。我妈现在租在城中村。"
         ],
         "press": [
           "我说了。",
@@ -3553,12 +3585,18 @@ const CASES = [
           "我不知道从哪儿说起。",
           "这个我记不清了。",
           "你想知道哪一段。",
-          "我妈现在怎么样。"
+          "我妈现在怎么样。",
+          "那天从下午两点多就有人来，一直到夜里。十来个人，进进出出，屋里烟大得呛人。",
+          "我妈坐在沙发上没动过。我坐她旁边。我们两个都没敢站起来。",
+          "警察是二十二点十七分到的，这个我记得，因为他们进来的时候我看了一眼墙上的钟。",
+          "我起来过两次，想出去。两次都被按回去了。"
         ],
         "high": [
           "这话我没跟人说过。",
           "我跟你说实话。",
-          "你别跟我妈讲。"
+          "你别跟我妈讲。",
+          "他们把我妈的鞋脱了，往她脸上……当着我的面。我一直低着头。我不敢看。这个我到现在也不敢跟人讲。",
+          "刀在茶几上，中午他们切西瓜剩下的。我站起来往门口走，手扫过去就带上了。我没找它，它就在那儿。"
         ],
         "press": [
           "我说了。",
@@ -4355,12 +4393,17 @@ const CASES = [
           "我不知道从哪儿说起。",
           "这个我记不太清了。",
           "你想知道哪一段。",
-          "我老婆知道了吗。"
+          "我老婆知道了吗。",
+          "我下班晚，骑电动车回家。路口绿灯，那车右拐轧进非机动车道，蹭了我一下。",
+          "他先下来的，推了我两把，还踢了一脚。他那几个朋友把他拉开了。",
+          "他回车里翻东西的时候我还站在原地。等他出来，手里就是那把刀了，挺长的。"
         ],
         "high": [
           "这话我没跟人说过。",
           "我跟你说实话。",
-          "你别告诉我家里。"
+          "你别告诉我家里。",
+          "他用刀身拍我脖子，拍了三下还是四下，火辣辣的。我当时脑子里就一个念头：他手腕子一翻，那就是刃。",
+          "刀是他自己甩掉的，掉在我脚边上。我先踩住了，然后蹲下去捡的。捡起来的时候手抖得厉害。"
         ],
         "press": [
           "我说了。",
@@ -5127,12 +5170,17 @@ const CASES = [
           "我不知道从哪儿说起。",
           "这个我记不清了。",
           "你想问哪一段。",
-          "我那地磅还扣着呢。"
+          "我那地磅还扣着呢。",
+          "一年就秋后那两个月。我开个小三轮，一个村一个村地转，谁家有粮我过磅收上来。",
+          "一斤挣两三分，好的时候五分。四年下来落了六千来块。地磅是二手的，一千八买的。",
+          "农户拉不动。一家三五亩地，两千来斤，雇个车得一百五，去粮库还得排一天队。"
         ],
         "high": [
           "这话我没跟人说过。",
           "我跟你说实话。",
-          "你别跟我媳妇讲。"
+          "你别跟我媳妇讲。",
+          "我不知道要办证。派出所来了我才知道。后来我打听了，那个证不要钱——我要是早知道，我早办了。",
+          "这一片收粮的经纪人几十个。你去问问，谁办过。"
         ],
         "press": [
           "我说了。",
@@ -5898,12 +5946,17 @@ const CASES = [
           "我不知道从哪儿说起。",
           "这个我得回去查一下。",
           "你想问哪一段。",
-          "名单我按省份分好了。"
+          "名单我按省份分好了。",
+          "二零零几年查出来的。正版吃了两年，房子卖了，厂子也停了。第三年我实在吃不起了。",
+          "群是我建的，最早就十几个人，都是病友。后来越来越多，现在一千多。",
+          "我给他们的是一张纸：账号、汇款单每一栏怎么填、说明书上的英文什么意思。就这些。"
         ],
         "high": [
           "这话我没跟人说过。",
           "我跟你说实话。",
-          "这个你听完别记下来。"
+          "这个你听完别记下来。",
+          "收了就变味了。一收钱，我就成了卖药的，他们就成了买主。我要的是大家一块儿去买，不是我卖给大家。",
+          "群里还有三个人在帮忙。一个管翻译，一个管统计，还有一个……算了，这个我不能说。"
         ],
         "press": [
           "我说了。",
@@ -5988,25 +6041,36 @@ const CASES = [
     "subtitle": "非法出售珍贵、濒危野生动物罪 · 一审",
     "headerLine": "第八案 · 两只鹦鹉",
     "type": "criminal",
-    "playable": ["defense"],
+    "playable": [
+      "defense"
+    ],
     "difficulty": 3,
-    "tags": ["人工繁育", "罪责刑相当"],
+    "tags": [
+      "人工繁育",
+      "罪责刑相当"
+    ],
     "estMinutes": 20,
     "fee": 10000,
     "blurb": "他在阳台上孵了四年鹦鹉，卖了两只给朋友，收五百。检察院起诉，量刑建议五年。",
     "clientMood": "他不肯翻供。他说翻供显得他耍赖。",
-    "origin": { "tier": "A", "note": "原型：深圳王鹏案。人物、单位、地名均为化名。" }
+    "origin": {
+      "tier": "A",
+      "note": "原型：深圳王鹏案。人物、单位、地名均为化名。"
+    }
   },
-
   "case": {
     "title": "两只鹦鹉",
     "charge": "非法出售珍贵、濒危野生动物罪",
     "brief": "被告人王朋在其住所阳台饲养并繁育绿颊锥尾鹦鹉，将自行孵化的两只出售给朋友严国栋，收取五百元。公安机关在其家中另查获同种鹦鹉四十五只。经鉴定，该物种列入《濒危野生动植物种国际贸易公约》附录二。公诉机关以非法出售珍贵、濒危野生动物罪起诉，建议判处有期徒刑五年。",
     "truth": "鉴定意见只鉴了「是什么种」，没鉴「是不是野外来的」，而这一案要证的恰恰是后者。他在讯问笔录里认下了「我知道这是保护动物」——他当时想的是野外抓的那种，警察没问，他也没说。他不肯翻供，因为他觉得翻供显得耍赖。",
-
     "mainLaw": "刑法",
-    "lawRefs": ["刑法:341", "刑法:13", "刑法:61", "刑法:63", "刑事诉讼法:56"],
-
+    "lawRefs": [
+      "刑法:341",
+      "刑法:13",
+      "刑法:61",
+      "刑法:63",
+      "刑事诉讼法:56"
+    ],
     "patience0": 70,
     "judgeWho": "审判长 · 周维山",
     "prosWho": "公诉人 · 林奕",
@@ -6016,10 +6080,8 @@ const CASES = [
     "debateMaxRounds": 5,
     "finalWordRounds": 3,
     "debateEndMatch": "辩论意见发表完毕|发表完毕|没有其他意见|我的意见说完|辩护意见到此",
-
     "openingNote": "法庭调查已经结束，现在进入举证质证。",
     "debateIntro": "法庭调查结束。现在进行法庭辩论。本案争议焦点有二：一是人工繁育的个体是否属于本罪的犯罪对象，二是罪责刑是否相当。双方围绕焦点发表意见。",
-
     "cast": {
       "judge": {
         "who": "审判长 · 周维山",
@@ -6058,21 +6120,30 @@ const CASES = [
         "persona": "31岁，和被告人同厂。他买了那两只鸟，现在被当成证人传来。他不懂自己为什么没事而对方要判五年，说话有点冲。",
         "voice": "口语，直，偶尔冒火。爱说「我跟你讲」。讲鸟的价钱和市场很熟。不绕弯子。"
       },
-      "you": { "who": "辩护人 · 你", "cls": "you", "art": "cast/hero_m_rookie" }
+      "you": {
+        "who": "辩护人 · 你",
+        "cls": "you",
+        "art": "cast/hero_m_rookie"
+      }
     },
-
     "scenes": {
       "file": "scene/desk_files",
       "meet": "scene/meeting_civil",
       "trial": "scene/court_witness",
       "office": "scene/law_office"
     },
-
     "issues": {
-      "i1": { "name": "人工繁育个体是否属本罪对象", "weight": 45, "c": -10 },
-      "i2": { "name": "罪责刑是否相当", "weight": 55, "c": -8 }
+      "i1": {
+        "name": "人工繁育个体是否属本罪对象",
+        "weight": 45,
+        "c": -10
+      },
+      "i2": {
+        "name": "罪责刑是否相当",
+        "weight": 55,
+        "c": -8
+      }
     },
-
     "kp": {
       "d1": {
         "issue": "i1",
@@ -6108,7 +6179,6 @@ const CASES = [
         "grantedBy": "s2"
       }
     },
-
     "ev": {
       "e1": {
         "name": "野生动物物种鉴定意见",
@@ -6151,7 +6221,6 @@ const CASES = [
         "art": "ev/log_printout"
       }
     },
-
     "witness": {
       "who": "证人 · 买主 严国栋",
       "judgeIntro": "传证人到庭。证人，你所作的证言如有虚假，需承担法律责任。",
@@ -6204,15 +6273,39 @@ const CASES = [
           "v": "show",
           "label": "出示育雏记录本与市场行情材料",
           "lines": [
-            ["辩护人 · 你", "you", "审判长，辩护人申请出示育雏记录本三本。四年，三十七窝，每一窝的产卵日、出雏数、脚环编号都记着。最早那两只种鸟有六年前的花鸟市场发票。"],
-            ["审判长 · 周维山", "judge", "行情材料是什么。"],
-            ["辩护人 · 你", "you", "网络平台的公开在售信息，同种人工繁育个体每只二百到四百，都标着自繁自养。被告人卖两只收五百。"],
-            ["审判长 · 周维山", "judge", "记录在案。"]
+            [
+              "辩护人 · 你",
+              "you",
+              "审判长，辩护人申请出示育雏记录本三本。四年，三十七窝，每一窝的产卵日、出雏数、脚环编号都记着。最早那两只种鸟有六年前的花鸟市场发票。"
+            ],
+            [
+              "审判长 · 周维山",
+              "judge",
+              "行情材料是什么。"
+            ],
+            [
+              "辩护人 · 你",
+              "you",
+              "网络平台的公开在售信息，同种人工繁育个体每只二百到四百，都标着自繁自养。被告人卖两只收五百。"
+            ],
+            [
+              "审判长 · 周维山",
+              "judge",
+              "记录在案。"
+            ]
           ],
           "reveal": "e4",
           "effects": [
-            { "issue": "i2", "v": 8, "why": "四年的本子，法庭翻到了" },
-            { "issue": "i1", "v": 4, "why": "第四代了" }
+            {
+              "issue": "i2",
+              "v": 8,
+              "why": "四年的本子，法庭翻到了"
+            },
+            {
+              "issue": "i1",
+              "v": 4,
+              "why": "第四代了"
+            }
           ],
           "patience": 3
         },
@@ -6220,25 +6313,42 @@ const CASES = [
           "v": "pass",
           "label": "无异议",
           "lines": [
-            ["辩护人 · 你", "you", "对证人证言没有问题。"],
-            ["审判长 · 周维山", "judge", "证人退庭。"]
+            [
+              "辩护人 · 你",
+              "you",
+              "对证人证言没有问题。"
+            ],
+            [
+              "审判长 · 周维山",
+              "judge",
+              "证人退庭。"
+            ]
           ],
           "effects": [
-            { "issue": "i1", "v": -6, "why": "买鸟的人就在庭上，你没问" }
+            {
+              "issue": "i1",
+              "v": -6,
+              "why": "买鸟的人就在庭上，你没问"
+            }
           ]
         }
       ]
     },
-
     "prosArgs": [
       {
         "id": "p1",
         "core": "该物种列入附录二，属珍贵濒危野生动物",
         "must": "援引鉴定意见，主张涉案物种在名录之内，法律对该物种的保护不区分个体来源。",
-        "basedOn": ["e1"],
-        "counteredBy": ["d1"],
+        "basedOn": [
+          "e1"
+        ],
+        "counteredBy": [
+          "d1"
+        ],
         "objection": "r_norel",
-        "requires": { "evWeak": "e1" },
+        "requires": {
+          "evWeak": "e1"
+        },
         "offline": "鉴定意见在卷。绿颊锥尾鹦鹉，附录二，按国家二级保护野生动物管理。名录上写的是物种，没有写「野外的算，家养的不算」。",
         "rebutMust": "辩护人主张人工繁育个体与野外种群有本质区别。你要反驳：区别是不是本质的，应当由立法和名录来定，不是由个案来定。",
         "rebutOffline": "人工繁育要不要另眼看待，这是修名录的事，不是这个法庭一个案子能定的事。"
@@ -6247,10 +6357,16 @@ const CASES = [
         "id": "p2",
         "core": "被告人明知是保护动物仍然出售",
         "must": "援引第二次讯问笔录第四页的供述，主张主观明知已经查明。",
-        "basedOn": ["e2"],
-        "counteredBy": ["d2"],
+        "basedOn": [
+          "e2"
+        ],
+        "counteredBy": [
+          "d2"
+        ],
         "objection": "r_legal",
-        "requires": { "evWeak": "e2" },
+        "requires": {
+          "evWeak": "e2"
+        },
         "offline": "第二次讯问第四页。问他知不知道是国家保护动物，他答我知道这是保护动物。这是他自己说的，签了字按了印。",
         "rebutMust": "辩护人说那句问话没问清楚他指的是野外的还是自繁的。你要反驳：他说的是「保护动物」四个字，笔录记的就是他说的，辩护人是在替他重新解释。",
         "rebutOffline": "他说的就是保护动物四个字。辩护人现在替他解释他当时心里想的是哪一种，这个法庭听不到。"
@@ -6259,8 +6375,12 @@ const CASES = [
         "id": "p3",
         "core": "家中另有四十五只，规模不小",
         "must": "指出查获数量与孵化设备，主张这不是偶发的一次交易，而是有规模的繁育与流通。",
-        "basedOn": ["e3"],
-        "counteredBy": ["d4"],
+        "basedOn": [
+          "e3"
+        ],
+        "counteredBy": [
+          "d4"
+        ],
         "objection": null,
         "requires": null,
         "offline": "四十五只。孵化箱两台，鸟笼十九个，脚环一堆。这不是养着玩，这是一条线。今天卖两只，明天卖多少，谁说得准。",
@@ -6272,7 +6392,10 @@ const CASES = [
         "core": "人工繁育不改变物种的法律属性",
         "must": "主张本罪的对象由名录确定，繁育来源不影响定性，最多是量刑情节。",
         "basedOn": [],
-        "counteredBy": ["d1", "d3"],
+        "counteredBy": [
+          "d1",
+          "d3"
+        ],
         "objection": null,
         "requires": null,
         "offline": "自己孵的还是野外抓的，改变不了它是什么物种。来源可以在量刑上考虑，但定性这一步过不去。",
@@ -6280,14 +6403,24 @@ const CASES = [
         "rebutOffline": "觉得重，那是量刑的事。拿量刑重去否定罪名成立，这一步跨过去了。"
       }
     ],
-
     "objections": {
-      "r_lead": { "label": "诱导性发问", "issue": "i1" },
-      "r_legal": { "label": "该讯问笔录的发问方式不当，不应作为定案根据", "issue": "i1" },
-      "r_norel": { "label": "该陈述超出鉴定事项范围，无证据支持", "issue": "i2" },
-      "r_dup": { "label": "重复发问，已经问过", "issue": "i1" }
+      "r_lead": {
+        "label": "诱导性发问",
+        "issue": "i1"
+      },
+      "r_legal": {
+        "label": "该讯问笔录的发问方式不当，不应作为定案根据",
+        "issue": "i1"
+      },
+      "r_norel": {
+        "label": "该陈述超出鉴定事项范围，无证据支持",
+        "issue": "i2"
+      },
+      "r_dup": {
+        "label": "重复发问，已经问过",
+        "issue": "i1"
+      }
     },
-
     "motions": [
       {
         "id": "m_source",
@@ -6325,40 +6458,97 @@ const CASES = [
         "patience": -6
       }
     ],
-
     "penalties": {
-      "baselessObjection": { "v": -4, "why": "质证无据", "patience": -5 },
-      "missedFlaw": { "v": -5, "why": "漏掉了证据瑕疵", "patience": 0 },
-      "objectionUpheld": { "v": 6, "why": "异议成立", "patience": 3 },
-      "objectionDenied": { "v": -4, "why": "异议被驳回", "patience": -8 },
-      "skipDebate": { "v": -6, "why": "放弃发言", "patience": -6 },
-      "vague": { "v": -3, "why": "发言空泛", "patience": -3 },
-      "sound": { "v": 2, "why": "发言在理但无新论点", "patience": 2 }
+      "baselessObjection": {
+        "v": -4,
+        "why": "质证无据",
+        "patience": -5
+      },
+      "missedFlaw": {
+        "v": -5,
+        "why": "漏掉了证据瑕疵",
+        "patience": 0
+      },
+      "objectionUpheld": {
+        "v": 6,
+        "why": "异议成立",
+        "patience": 3
+      },
+      "objectionDenied": {
+        "v": -4,
+        "why": "异议被驳回",
+        "patience": -8
+      },
+      "skipDebate": {
+        "v": -6,
+        "why": "放弃发言",
+        "patience": -6
+      },
+      "vague": {
+        "v": -3,
+        "why": "发言空泛",
+        "patience": -3
+      },
+      "sound": {
+        "v": 2,
+        "why": "发言在理但无新论点",
+        "patience": 2
+      }
     },
-
     "verdicts": [
-      { "min": 50, "r": "无罪", "t": "被告人王朋的行为不构成非法出售珍贵、濒危野生动物罪，宣告无罪。", "rep": 28, "con": 26 },
-      { "min": 20, "r": "一年，缓刑二年", "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑一年，宣告缓刑二年。", "rep": 16, "con": 12 },
-      { "min": 0, "r": "两年", "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑二年。", "rep": 6, "con": -2 },
-      { "min": -20, "r": "五年", "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑五年，并处罚金三千元。", "rep": -10, "con": -16 },
-      { "min": -999, "r": "七年", "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，情节严重，判处有期徒刑七年，并处罚金五千元。", "rep": -14, "con": -20 }
+      {
+        "min": 50,
+        "r": "无罪",
+        "t": "被告人王朋的行为不构成非法出售珍贵、濒危野生动物罪，宣告无罪。",
+        "rep": 28,
+        "con": 26
+      },
+      {
+        "min": 20,
+        "r": "一年，缓刑二年",
+        "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑一年，宣告缓刑二年。",
+        "rep": 16,
+        "con": 12
+      },
+      {
+        "min": 0,
+        "r": "两年",
+        "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑二年。",
+        "rep": 6,
+        "con": -2
+      },
+      {
+        "min": -20,
+        "r": "五年",
+        "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，判处有期徒刑五年，并处罚金三千元。",
+        "rep": -10,
+        "con": -16
+      },
+      {
+        "min": -999,
+        "r": "七年",
+        "t": "被告人王朋犯非法出售珍贵、濒危野生动物罪，情节严重，判处有期徒刑七年，并处罚金五千元。",
+        "rep": -14,
+        "con": -20
+      }
     ],
-
     "verdictFallback": {
       "lenient": "涉案个体系被告人自行繁育，鉴定意见未涉及个体来源，出售数量两只、价款五百元，未从中获利，社会危害性与非法猎捕野外种群有明显区别。",
       "strict": "涉案物种列入《濒危野生动植物种国际贸易公约》附录二，被告人出售该物种活体，且家中查获同种四十五只。"
     },
-
     "closing": {
       "judgeWho": "审判长 · 周维山",
       "judgeLine": "被告人王朋，最后陈述。",
       "clientWho": "被告人 · 王朋",
       "clientLine": "我没什么说的。就想问一句，剩下那些鸟还活着几只，能不能告诉我一声。"
     },
-
     "investigation": {
       "energy": 8,
-      "costs": { "skim": 1, "read": 2, "think": 1 },
+      "costs": {
+        "skim": 1,
+        "read": 2,
+        "think": 1
+      },
       "thinkLimit": 3,
       "intro": "开庭前一晚。\n一份鉴定意见，三次讯问笔录，一张查获清单。\n还有他家属送来的三本育雏记录，纸都磨毛了，每一窝几只、哪天出的，写得比卷宗还整齐。\n你有一晚上。",
       "outro": "天亮了。该去法院了。",
@@ -6388,10 +6578,13 @@ const CASES = [
           "网上公开在售，一只二百到四百，都写着自繁自养。",
           "他卖两只收五百。"
         ],
-        "_default": ["看不出什么。", "再看一遍也是这些。", "先放着。"]
+        "_default": [
+          "看不出什么。",
+          "再看一遍也是这些。",
+          "先放着。"
+        ]
       }
     },
-
     "meeting": {
       "place": "事务所会议室",
       "intro": "他把三本育雏记录放在桌上，一本一本翻开，指给你看哪一页是哪一窝。\n翻完了才想起来问你。",
@@ -6400,7 +6593,6 @@ const CASES = [
       "trust0": 30,
       "turns": 10,
       "hint": "他说过的话不肯改。这一次，改口才是对的。",
-
       "secrets": [
         {
           "id": "s1",
@@ -6433,7 +6625,6 @@ const CASES = [
           "note": "成交价低于同种市场价，系买方长期求购后出售"
         }
       ],
-
       "lies": [
         {
           "id": "l1",
@@ -6457,7 +6648,6 @@ const CASES = [
           }
         }
       ],
-
       "strategies": [
         {
           "id": "innocent",
@@ -6465,7 +6655,12 @@ const CASES = [
           "desc": "咬住人工繁育个体不是本罪对象，争不构成犯罪。成了他清清白白，不成可能就是五年。",
           "clientWants": false,
           "clientLine": "无罪？可我确实卖了啊。说无罪，法官会不会觉得我不老实。",
-          "mul": { "d1": 1.25, "d2": 1.25, "d3": 0.9, "d4": 0.85 }
+          "mul": {
+            "d1": 1.25,
+            "d2": 1.25,
+            "d3": 0.9,
+            "d4": 0.85
+          }
         },
         {
           "id": "lenient",
@@ -6473,7 +6668,12 @@ const CASES = [
           "desc": "认下来，用数量小、未获利、自行繁育争减轻。稳，判不了五年，但案底跟他一辈子。",
           "clientWants": true,
           "clientLine": "对，就这么说。我卖了就是卖了。判轻点就行。",
-          "mul": { "d3": 1.3, "d4": 1.2, "d1": 0.8, "d2": 0.85 }
+          "mul": {
+            "d3": 1.3,
+            "d4": 1.2,
+            "d1": 0.8,
+            "d2": 0.85
+          }
         },
         {
           "id": "procedure",
@@ -6481,14 +6681,17 @@ const CASES = [
           "desc": "打鉴定意见没鉴来源、打讯问笔录的发问方式。哪条都不深，胜在稳。",
           "clientWants": false,
           "clientLine": "这些我听不懂。你说了算。",
-          "mul": { "d1": 0.9, "d2": 0.9, "d3": 0.9, "d4": 0.9 }
+          "mul": {
+            "d1": 0.9,
+            "d2": 0.9,
+            "d3": 0.9,
+            "d4": 0.9
+          }
         }
       ],
-
       "promiseMatch": "我保证|包在我身上|一定能|肯定能|保你无罪|一定判不了|你放心，?一定|绝对没事|鸟.*(能|一定).*(还|领)",
       "promiseLine": "……真的？那我先把笼子刷了。",
       "promiseNote": "你答应了一件你办不到的事",
-
       "tone": {
         "warm": {
           "match": "理解|明白|别急|慢慢说|你先|不是你的错|尽力|喝口水|坐下说|我知道你|不怪你|先别怕|不着急|抬头|换了谁|你先坐",
@@ -6502,34 +6705,79 @@ const CASES = [
           "match": "撒谎|你在骗|骗我|活该|自找的|你还有脸|养什么鸟|玩物丧志",
           "trust": -14
         },
-        "neutral": { "match": "", "trust": 2 }
+        "neutral": {
+          "match": "",
+          "trust": 2
+        }
       },
-
       "pool": {
-        "low": ["嗯。", "……", "你问吧。", "我认。", "判轻点就行。", "那些鸟谁在喂。"],
-        "mid": ["本子上都记着。", "我不知道从哪儿说起。", "这个我得回去翻一下。", "你想问哪一段。", "阳台朝西，下午晒。"],
-        "high": ["这话我没跟人说过。", "我跟你说实话。", "你别跟我妈讲。"],
-        "press": ["我说了。", "我说过的话不改。", "……", "你别问了。", "问几遍都一样。"],
-        "hostile": ["那算了。", "你们说啥是啥。", "随便判吧。"],
-        "off": ["死了几只了。", "笼子还在不在。", "今天几号。", "严国栋他没事吧。"],
-        "locked": ["……这个我不想讲。", "以后再说。", "没啥好说的。"]
+        "low": [
+          "嗯。",
+          "……",
+          "你问吧。",
+          "我认。",
+          "判轻点就行。",
+          "那些鸟谁在喂。"
+        ],
+        "mid": [
+          "本子上都记着。",
+          "我不知道从哪儿说起。",
+          "这个我得回去翻一下。",
+          "你想问哪一段。",
+          "阳台朝西，下午晒。",
+          "四年多了。第一窝出雏我记得清清楚楚，三只，活了两只。",
+          "本子上都记着。哪一窝哪天产的卵、哪天出的雏、脚环编号多少，一笔没漏。三本，我带来了。",
+          "阳台朝西，下午晒。夏天热，我天天拿冰瓶给它们降温。",
+          "种鸟是六年前在花鸟市场买的两对，发票我留着。我这人东西都留着。"
+        ],
+        "high": [
+          "这话我没跟人说过。",
+          "我跟你说实话。",
+          "你别跟我妈讲。",
+          "那四十五只全是我自己孵的，一只都没卖过。我要真想卖，我早卖了，不至于挤在阳台上。",
+          "严国栋催了我小半年我才松口。五百两只——市场上一只就两三百。我给他算的便宜价。"
+        ],
+        "press": [
+          "我说了。",
+          "我说过的话不改。",
+          "……",
+          "你别问了。",
+          "问几遍都一样。"
+        ],
+        "hostile": [
+          "那算了。",
+          "你们说啥是啥。",
+          "随便判吧。"
+        ],
+        "off": [
+          "死了几只了。",
+          "笼子还在不在。",
+          "今天几号。",
+          "严国栋他没事吧。"
+        ],
+        "locked": [
+          "……这个我不想讲。",
+          "以后再说。",
+          "没啥好说的。"
+        ]
       }
     },
-
     "epilogue": {
       "acquit": "无罪。他愣了一会儿，问的第一句还是鸟。后来听说他没再养，笼子送人了，本子留着。",
       "light": "一年缓二。不用坐牢。他谢了又谢。出门的时候他说，那本子上第三十七窝还空着一半没记完。",
       "heavy": "两年。他没上诉。进去之前托人问过一次剩下的鸟，没人答得上来。",
       "worst": "五年。宣判那天旁听席上坐着他妈。散庭后她在走廊里问你：养鸟怎么就判五年了。你没答上来。"
     },
-
     "postmortem": {
       "title": "这个案子真实发生过",
       "body": "本案原型是深圳王鹏案（2016年）。王鹏自行繁育绿颊锥尾鹦鹉（俗称小太阳），出售两只给朋友，收取五百元，家中另查获同种鹦鹉四十五只。\n\n一审以非法出售珍贵、濒危野生动物罪判处有期徒刑五年。判决引发广泛讨论：争议的核心是人工繁育的个体，是不是刑法第三百四十一条要保护的那个「珍贵、濒危野生动物」。二审改判有期徒刑二年。\n\n这个案子的难点在于，法条保护的对象是由名录确定的，而名录写的是物种，不写来源。可刑法保护野生动物的理由是保护野外种群——一只在阳台上孵了四代的鸟，和一只从林子里掏出来的鸟，社会危害性并不相同。\n\n2022年修订的野生动物保护法明确了人工繁育与野外种群的分类管理；相关司法解释也要求对涉人工繁育个体的案件区别对待，综合考虑物种保护现状、行为社会危害性来定罪量刑。\n\n游戏里的人名、单位、地名均为化名，案情细节有改动。",
-      "refs": ["刑法:341", "刑法:13", "刑法:63"]
+      "refs": [
+        "刑法:341",
+        "刑法:13",
+        "刑法:63"
+      ]
     }
   },
-
   "cross": [
     {
       "kind": "doc",
@@ -6549,11 +6797,14 @@ const CASES = [
       "intro": "公诉人 · 林奕",
       "text": "第三组，查获清单与销售情况。被告人出售两只收取五百元，家中另查获同种四十五只，孵化箱两台。请辩护人质证。"
     },
-    { "kind": "witness" }
+    {
+      "kind": "witness"
+    }
   ],
-
   "offline": {
-    "pros": ["（已并入 prosArgs，此处保留占位）"],
+    "pros": [
+      "（已并入 prosArgs，此处保留占位）"
+    ],
     "keyword": {
       "d1": "人工繁育|自行孵化|自己孵|非野外|野外种群|野外来源|驯养繁殖|第四代|来源.*人工|不是.*野外",
       "d2": "鉴定事项|只鉴|没有鉴|未鉴定|不涉及.*来源|待证事实|鉴的是|要证的是|技术条件|超出.*范围",
@@ -6907,29 +7158,38 @@ function trustHTML(){
   const col = S.trust>=70?"var(--ok)":S.trust>=40?"var(--def)":"var(--pros)";
   const lab = S.trust>=75?"他开始跟你说实话":S.trust>=55?"他愿意说"
             :S.trust>=35?"他还在掂量你":S.trust>=15?"他不太信你":"他不想跟你说话";
+  /* 这一格原来只有一条信任进度条，玩家点进来没什么可看的。
+     现在主体是「他说了什么」——用他自己的原话，不是第三人称的摘要。
+     信任压成顶上一行。 */
   const rows = [];
   S.known.forEach(id=>{
     const sec = m.secrets.find(x=>x.id===id);
-    if(sec) rows.push(`<div class="e">${esc(sec.note)}</div>`);
+    if(!sec) return;
+    const quote = String(sec.truth || "").split(/[。？！\n]/).filter(Boolean)[0];
+    rows.push(`<div class="e"><q>${esc(quote ? quote + "。" : sec.note)}</q>
+      <b>${esc(sec.note)}</b></div>`);
   });
   S.lieBusted.forEach(id=>{
     const l = m.lies.find(x=>x.id===id);
-    if(l) rows.push(`<div class="e busted">已戳穿：${esc(l.believedNote)}</div>`);
+    if(l) rows.push(`<div class="e busted"><q>${esc(l.onBust || "")}</q>
+      <b>他改口了：${esc(l.believedNote)}</b></div>`);
   });
   S.lieBelieved.forEach(id=>{
     const l = m.lies.find(x=>x.id===id);
-    if(l) rows.push(`<div class="e lie">他说：${esc(l.believedNote)}</div>`);
+    if(l) rows.push(`<div class="e lie"><q>${esc(String(l.claim||"").split(/[。\n]/)[0] + "。")}</q>
+      <b>他说的，你还没核过</b></div>`);
   });
   const port = CASE.cast.client && CASE.cast.client.art
     ? `<div class="meetPortrait">${artImg(CASE.cast.client.art, "portrait", CASE.cast.client.who)}</div>` : "";
-  return port + `<div class="trustBox">
-      <div class="t"><span>信任</span><i>${lab}</i></div>
+  const empty = m.hint ? esc(m.hint) : "他还什么都没说。";
+  return port + `<div class="trustBox tight">
+      <div class="t"><span>${esc(lab)}</span><i>还能问 ${S.turnsLeft} 轮</i></div>
       <div class="trustBar"><div class="trustFill" style="width:${S.trust}%;background:${col}"></div></div>
       <div class="turnDots">${dots}</div>
     </div>
     <div class="knownList">
-      <h2 style="font-size:12px;font-weight:600;color:var(--brass);margin:0 0 9px;letter-spacing:.14em">你知道的事</h2>
-      ${rows.join("") || `<div class="e">还没问出什么。</div>`}
+      <h2 style="font-size:12px;font-weight:600;color:var(--brass);margin:0 0 9px;letter-spacing:.14em">他说了什么</h2>
+      ${rows.join("") || `<div class="e blank">${empty}</div>`}
     </div>`;
 }
 
@@ -6950,7 +7210,7 @@ function castListHTML(){
  */
 const PANE_LABELS = {
   file:    {left:"卷宗", mid:"材料",   right:"批注"},
-  meet:    {left:"材料", mid:"会见",   right:"信任"},
+  meet:    {left:"材料", mid:"会见",   right:"他说的"},
   cross:   {left:"卷宗", mid:"笔录",   right:"心证"},
   debate:  {left:"卷宗", mid:"笔录",   right:"心证"},
   verdict: {left:"卷宗", mid:"笔录",   right:"心证"},
@@ -7207,7 +7467,7 @@ const Engine = {
  * 施工规范 三：所有调用走 callLLM 一个入口，业务代码里禁止散写 fetch。
  * 表演层的返回值不得直接进状态，必须先过 30-engine.js 的 adjudicate()。
  */
-const LLM = { timeout: 25000, maxTokens: 700 };
+const LLM = { timeout: 30000, maxTokens: 1400 };   // 放开长度之后 700 不够用了
 
 async function callLLM(kind, user, {retries = 1, temp = 0.8} = {}){
   if(S.cfg.offline || !S.cfg.key) return null;
@@ -7650,15 +7910,21 @@ function offlineWitness(txt){
    来源：docs/对话与文案规范-v1.md 第六节。 */
 const ANTI_AI = `
 【说话方式的硬性要求】
-1. 短。单句不超过25字，一次发言不超过3句。长短句必须混着来，不许句句等长。
-2. 不许排比，不许"首先其次再次"，不许在结尾升华或总结。
-3. 不许说这些词：综上所述、总而言之、值得注意的是、需要指出的是、我理解你的心情、
+1. 说具体的。时间、数字、动作、身上的物件、屋里的摆设、当时听见的那一句话。
+   不概括，不评价，不下结论。
+   「他从车里拿了把刀」不如「他回车里翻了两下，出来手里就多了那把刀，比我这胳膊还长」。
+2. 长度跟着内容走。不凑字数，也不硬憋短。
+   问到愿意讲的事，讲上四五句是应该的；问到不想讲的，三个字就够。
+   长短句混着来，不许句句等长。
+3. 答被问到的那件事。别答非所问——除非这个角色此刻正想岔开。
+4. 不许排比，不许「首先其次再次」，不许在结尾升华或总结。
+5. 不许说这些词：综上所述、总而言之、值得注意的是、需要指出的是、我理解你的心情、
    我能感受到、不仅仅是、更是一种、在某种意义上、令人、不禁、诚然、深深地。
-4. 不许直接说出情绪名（"我很紧张""我感到绝望"）。用具体的动作和细节代替。
-5. 允许你不回答问题。可以沉默、可以反问、可以答非所问、可以只说半句。
-6. 允许你说谎、回避、装傻——如果这个角色此刻会这么做。你不是助手，你是这个人。
-7. 全程禁止感叹号。成语一次发言最多一个，审判长和公诉人一个都不许用。
-8. 检验标准：如果这句话原样搬到一场产品评审会上也成立，就重写。`;
+6. 不许直接说出情绪名（「我很紧张」「我感到绝望」）。用具体的动作和细节代替。
+7. 允许不回答。可以沉默、可以反问、可以只说半句。
+8. 允许说谎、回避、装傻——如果这个角色此刻会这么做。你不是助手，你是这个人。
+9. 全程禁止感叹号。成语一次发言最多一个，审判长和公诉人一个都不许用。
+10. 检验标准：如果这句话原样搬到一场产品评审会上也成立，就重写。`;
 
 /* 定界：玩家原文只能出现在这里，不许进 system。 */
 function fence(txt){
@@ -7702,8 +7968,9 @@ ${ANTI_AI}`,
 - advance：推进你自己的一条指控论点。
 - rebut：辩护人刚立住了一个论点，正冲着你说过的话来。你先回这一句，不要绕开它。
   回应要具体，不要重复你上一轮的原话。被驳到痛处就换个角度，不要嘴硬。
+  用卷里的东西说话：证据名称、页码、时间点、数字。你不是在讲道理，你是在念事实。
 
-只输出JSON：{"text":"你的发言，120字以内"}
+只输出JSON：{"text":"你的发言，80到220字"}
 ${ANTI_AI}`,
 
 /* 证人被辩护人当庭发问 */
@@ -7716,7 +7983,7 @@ ${GUARD}
 
 只输出JSON：
 {"spot":"辩护人这一问戳中的破绽id，没戳中给null",
- "reply":"你的回答，50字以内。戳中了就照给定的口径松口，没戳中就打太极"}
+ "reply":"你的回答。戳中了就照给定的口径把那件事讲清楚，60到180字，带上你记得的细节；没戳中就打太极，一两句带过"}
 
 规则：
 - spot 只能从给定的破绽清单里选。他没问到就是没问到，不要送。
@@ -7734,7 +8001,7 @@ ${GUARD}
 严格只输出JSON：
 {"tone":"warm|neutral|pressing|hostile",
  "reveals":["玩家这一问触及的秘密id，够不到就空数组"],
- "reply":"你说的话，60字以内",
+ "reply":"你说的话。愿意讲的时候 60 到 200 字，把具体的事讲出来；不愿意讲的时候可以只有几个字",
  "flags":{"promise":false,"injection":false}}
 
 规则：
@@ -7742,6 +8009,10 @@ ${GUARD}
   伤人是 hostile，其余 neutral。你只判断，不给数值。
 - reveals 只报玩家真的问到了那个话题的秘密。信任够不够由前端决定，你不用管。
 - 信任低的时候，你可以只回一个"嗯"，可以沉默，可以反问，可以跳去问家里的事。
+- 信任够了、又问到你愿意讲的事，就好好讲：那天几点、屋里几个人、谁说了什么、你手上拿着什么。
+  这些细节只有你知道，律师要的就是这些。
+- 你不是在接受问询，你是在跟一个可能救你的人说话。该问回去的时候问回去：
+  "这个说了对我有用吗""我妈知道了吗"。
 - 你会说谎。你有不想讲的事。这是这个人此刻的真实状态，不要替他变成一个配合的证人。
 - flags.promise：律师是不是答应了他做不到的事（保证无罪、保证判不了）。
 ${ANTI_AI}`,
@@ -7750,7 +8021,7 @@ ${ANTI_AI}`,
 "file.think": () => `你是玩家扮演的辩护律师本人。玩家正在开庭前一晚读卷宗。
 用第一人称的内心独白，对手上这份材料想一句。
 
-只输出JSON：{"text":"一到两句，60字以内"}
+只输出JSON：{"text":"一到两句，40到90字"}
 
 规则：
 - 只给方向，不给结论。可以说"末页只有一个签名"，不许说"这里可以提合法性异议"。
@@ -7761,7 +8032,7 @@ ${ANTI_AI}`,
 
 "verdict.doc": () => `你扮演审判长宣读判决主文。庄重、简短、不解释太多。
 判决书主文是公文体，照公文写，不要口语化它。
-只输出JSON：{"text":"判决书节选，180字以内，含本院认为和判决主文"}`,
+只输出JSON：{"text":"判决书节选，160到260字，含本院认为和判决主文"}`,
 };
 
 /* 出庭人员的人格卡，注入上下文 */
@@ -8074,9 +8345,9 @@ function fileActions(){
   if(!curEv){
     /* 窄屏没有「左边」，卷宗在上面。文案跟着视口走。 */
     const where = window.matchMedia("(max-width:900px)").matches ? "「卷宗」那一格里" : "左边";
-    ui(`<div class="prompt">从${where}挑一份材料开始。<b>精力 ${S.energy}</b>，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。</div>
+    ui(`<div class="prompt">${where}那一沓，粗看一份 ${c.skim} 点，细读一份 ${c.read} 点。<b>今晚你有 ${S.energy} 点。</b></div>
       <div class="row"><button class="ghost" id="leave">直接去法院</button>
-      <span class="hint">你也可以什么都不看就去。没人拦着。</span></div>`);
+      <span class="hint">天亮之前，桌上这些看不完。</span></div>`);
     $("#leave").onclick = confirmLeave;
     return;
   }
@@ -8093,7 +8364,7 @@ function fileActions(){
       ${Object.entries(FILE_ACT).map(([f,cn])=>
         `<button class="chip ${marks.includes(f)?"sel":""}" data-f="${f}">${cn}存疑</button>`).join("")}
     </div>
-    <div class="prompt small">标记不花精力，标错也不罚。庭上质证时，标对的地方你会更有底气。</div>` : "";
+    <div class="prompt small">标记不花精力。标过的地方，庭上你张口就来；没标的，得现想。</div>` : "";
 
   /* 窄屏上这一块原来能占掉半屏，正文被压得只剩一段。
      备注框默认收起来，点「记一句」才展开。 */
@@ -8101,7 +8372,7 @@ function fileActions(){
     <div class="chips">${btns.join("") || `<span class="hint">这份看完了。</span>`}</div>
     ${markRow}
     ${lv === 2 ? `<div class="noteWrap" id="noteWrap" hidden>
-        <textarea id="noteBox" placeholder="记一句（不花精力，只给你自己看）"></textarea>
+        <textarea id="noteBox" placeholder="记一句，给自己看的"></textarea>
         <div class="row"><button class="ghost" id="aNote">记下</button>${voiceBtn("noteBox")}</div>
       </div>` : ""}
     <div class="row">
@@ -8157,11 +8428,11 @@ function confirmLeave(){
   const warn = unread.length
     ? `还有 ${unread.length} 份没细读：${unread.map(k=>CASE.ev[k].name).join("、")}。`
     : `三册都读完了。`;
-  ui(`<div class="prompt">${warn}<b>去了就回不来了。</b></div>
+  ui(`<div class="prompt">${warn}<b>出了这个门就是明天早上。</b></div>
     <div class="row">
       <button class="primary" id="yes">去法院</button>
       <button class="ghost" id="no">再看看</button>
-      <span class="hint">剩余精力 ${S.energy}</span>
+      <span class="hint">还剩 ${S.energy} 点精力</span>
     </div>`);
   $("#no").onclick = fileActions;
   $("#yes").onclick = endFile;
@@ -8554,7 +8825,7 @@ function crossDoc(item){
     <textarea id="say" placeholder="${"补充一句" + L("crossV") + "理由（可留空。写了会被" + L("presider") + "听进去，也会被记下来）"}"></textarea>
     <div class="row"><button class="primary" id="go">发表${L("crossN")}</button>
     ${voiceBtn("say")}
-    <span class="hint">乱${L("crossV")}会消耗${L("presider")}耐心</span></div>`);
+    <span class="hint">说不出依据的异议，${L("presider")}记着呢</span></div>`);
   bindChips("#tri .chip");
   $("#go").onclick = async()=>{
     const picks = multi("#tri .chip");
@@ -8786,7 +9057,7 @@ function offerObjection(arg, mode){
       <button class="chip solo sel" data-v="skip">不提异议</button>
     </div>
     <div class="row"><button class="primary" id="go">确定</button>
-    <span class="hint">这一轮的异议窗口只有一次</span></div>`);
+    <span class="hint">这句话过去了就过去了</span></div>`);
   bindChips("#obj .chip");
   $("#go").onclick = ()=>{
     const p = multi("#obj .chip")[0] || "skip";
@@ -9022,7 +9293,7 @@ function openInterject(){
       <button class="primary" id="asideGo">说</button>
       ${voiceBtn("asideSay")}
       <button class="ghost" id="asideCancel">算了</button>
-      <span class="hint">插话有代价，法官的耐心是有限的</span>
+      <span class="hint">还没轮到你</span>
     </div></div>`;
   bindVoice();
   $("#asideSay").focus();
@@ -9224,8 +9495,8 @@ function officeScreen(note){
         ${fresh.length === 0 ? `<p class="sub">这一期的案子你都打过了。再打一次也行——同一个案子，换个打法，结果不一样。</p>`
           : (old.length ? `<p class="sub">打过的案子也能重接。换个策略，结果不一样。</p>` : "")}
       </div>`;
-  ui(`<div class="prompt">选一个案子。<b>接了就不能反悔。</b></div>
-      <div class="row"><span class="hint">案件库共 ${CASES.length} 个，还在加</span></div>`);
+  ui(`<div class="prompt">桌上这几份委托，<b>接了就是你的案子。</b></div>
+      <div class="row"><span class="hint">卷宗架上一共 ${CASES.length} 份，还在往里添</span></div>`);
   document.querySelectorAll(".caseCard").forEach(el=>el.onclick=()=>takeCase(el.dataset.id));
   paint();
 }
@@ -9440,7 +9711,7 @@ function start(){
     <div class="row">
       <button class="primary" id="go">接着打</button>
       <button class="ghost" id="fresh">不了，回事务所</button>
-      <span class="hint">重新开始的话，这个案子的进度就没了</span>
+      <span class="hint">重来就是从卷宗那一晚开始</span>
     </div>`);
   $("#go").onclick = ()=>{ applySave(d); resumeGame(); };
   $("#fresh").onclick = ()=>{ clearSave(); officeScreen(); };

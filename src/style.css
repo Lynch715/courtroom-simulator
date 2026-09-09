@@ -187,6 +187,7 @@ label.f input{
   .col.right .scale{border-bottom:1px solid var(--line);padding:18px 14px 10px}
   .col.right .scale svg{max-width:190px}
   .col.right .ledger{display:block}
+  body.phase-meet .col.right .ledger, body.phase-file .col.right .ledger{display:none}
 
   #record{padding:16px 16px 24px}
   #action{padding:12px 16px 16px}
@@ -374,8 +375,12 @@ body.phase-meet #aside{display:none}
   body[data-pane="mid"]   .col.mid  {display:flex;flex-direction:column}
 
   /* 心证那一屏是完整的：天平、耐心、流水都在，各自舒展 */
-  .col.right .scale{padding:20px 16px 12px;border-bottom:1px solid var(--line);
-    display:block;text-align:center}
+  .col.right .scale{padding:20px 16px 12px;border-bottom:1px solid var(--line);text-align:center}
+  /* 会见和阅卷阶段没有心证也没有法官耐心，这两块不该出现。
+     上面那条 .col.right .scale 原来带了 display:block，把外面的隐藏规则顶掉了，
+     结果会见时顶上挂着一个「-9 略偏控方」——那会儿还没开庭。 */
+  body.phase-meet .col.right .scale, body.phase-meet .col.right .pat,
+  body.phase-file .col.right .scale, body.phase-file .col.right .pat{display:none}
   .col.right .scale svg{max-width:200px;width:100%}
   .col.right .scale .val{font-size:32px;margin-top:4px}
   .col.right .pat{padding:14px 16px}
@@ -569,3 +574,14 @@ body.phase-office #aside{display:none}
 .testOut.good b{color:var(--ok)}
 .testOut.bad{border-color:var(--pros)}
 .testOut.bad b{color:var(--pros)}
+
+/* 会见那一格：主体是他说过的话 */
+.trustBox.tight{padding:12px 14px 12px}
+.trustBox.tight .t{margin-bottom:6px}
+.knownList .e q{display:block;quotes:none;font-family:var(--serif);font-size:13.5px;line-height:1.75;
+  color:var(--paper);margin-bottom:3px}
+.knownList .e b{display:block;font-weight:400;font-size:11.5px;color:var(--muted);line-height:1.6}
+.knownList .e{padding:9px 0}
+.knownList .e.blank{color:var(--muted);font-size:12.5px;line-height:1.8;border-bottom:none}
+.knownList .e.lie q{color:var(--pros)}
+.knownList .e.busted q{color:var(--ok)}

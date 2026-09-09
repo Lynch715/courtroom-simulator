@@ -19,7 +19,7 @@ function openInterject(){
       <button class="primary" id="asideGo">说</button>
       ${voiceBtn("asideSay")}
       <button class="ghost" id="asideCancel">算了</button>
-      <span class="hint">插话有代价，法官的耐心是有限的</span>
+      <span class="hint">还没轮到你</span>
     </div></div>`;
   bindVoice();
   $("#asideSay").focus();

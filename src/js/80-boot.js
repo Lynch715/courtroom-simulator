@@ -23,7 +23,7 @@ function start(){
     <div class="row">
       <button class="primary" id="go">接着打</button>
       <button class="ghost" id="fresh">不了，回事务所</button>
-      <span class="hint">重新开始的话，这个案子的进度就没了</span>
+      <span class="hint">重来就是从卷宗那一晚开始</span>
     </div>`);
   $("#go").onclick = ()=>{ applySave(d); resumeGame(); };
   $("#fresh").onclick = ()=>{ clearSave(); officeScreen(); };

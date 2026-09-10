@@ -46,6 +46,16 @@ function handleAct(res, opt){
   const act = res.act || "辩论";
   const f = res.flags || {};
 
+  /* 申请准不准，是引擎说了算，不是模型说了算。
+     离线路由已经把 _motion 挑好了；在线时模型只报「这是一个申请」，
+     所以在这儿按原文再匹配一次，并且用案件包里写好的那句回应盖掉模型的话——
+     否则模型可能自己演一句「准许」，而卷宗里什么都没多出来。 */
+  if(act === "申请" && res._motion === undefined){
+    const txt = String(opt.text || "");
+    res._motion = (CASE.motions || []).find(x => new RegExp(x.match).test(txt)) || null;
+    if(res._motion && res._motion.reply) res.reply = [{who:"judge", text: res._motion.reply}];
+  }
+
   /* 论点只有在发表辩论/质证意见时才算数。骂人骂出一个论点是不算的。 */
   let adj = null;
   if(act === "辩论" || act === "质证"){
@@ -72,9 +82,23 @@ function handleAct(res, opt){
       patience(-12, "言辞不当");
       career("rep", -1, L("onSite") + "失礼");
       break;
-    case "申请":
-      patience((res._motion && res._motion.patience) || -4, "申请不予准许");
+    case "申请": {
+      const mo = res._motion;
+      /* 到 c08 为止，所有申请都是驳回——申请这个动作等于纯扣耐心，没人会用第二次。
+         c09 起有真能准的申请：没有证人的案子，辩方证据只能靠申请调取。
+         准了就把那份东西调进来，当场进卷宗，可以出示、可以当论点前置。 */
+      if(mo && mo.grant){
+        if(mo.reveals) showEv(mo.reveals);
+        if(typeof mo.patience === "number" && mo.patience) patience(mo.patience, "申请准许");
+        if(mo.effect) move(mo.effect.issue, mo.effect.v, mo.effect.why || "申请准许");
+        if(mo.reveals && CASE.ev[mo.reveals])
+          say("", "sys", "《" + CASE.ev[mo.reveals].name + "》调取到庭，已入卷。");
+        paint();
+      }else{
+        patience((mo && mo.patience) || -4, "申请不予准许");
+      }
       break;
+    }
     case "与当事人交流":
       patience(-5, L("hearing") + "中与" + L("defendant") + "交谈");
       break;

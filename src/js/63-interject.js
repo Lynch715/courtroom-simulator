@@ -42,7 +42,7 @@ function openInterject(){
       if(!res.reply || !res.reply.length)
         res.reply = [{who: "judge", text: "这些话留到" + L("opinionN") + "里说。"}];
     }
-    handleAct(res, {phase: "interject"});
+    handleAct(res, {phase: "interject", text: cut.text});
     S.busy = false;
     mountAside();
   };
